@@ -17,9 +17,9 @@ from Function import *
 #======這裡是呼叫的檔案內容=====
 
 #======python的函數庫==========
-# import tempfile, os
-# import datetime
-# import time
+import tempfile, os
+import datetime
+import time
 #======python的函數庫==========
 
 app = Flask(__name__)
