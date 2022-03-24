@@ -22,6 +22,11 @@ import datetime
 import time
 #======python的函數庫==========
 
+#======self written==========
+from Code.dataCrawler import getRadarData
+import numpy as np
+#======self written==========
+
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 # Channel Access Token
