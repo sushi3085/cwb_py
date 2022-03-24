@@ -32,7 +32,10 @@ handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 @app.route('/repeat', methods=['GET', 'POST'])
 def repeatResponse():
-    print(request.get_data(as_text=True))
+    username = request.args.get('username')
+    password = request.args.get('password')
+    print(username)
+    print(password)
     return 'OK'
 
 # 監聽所有來自 /callback 的 Post Request
