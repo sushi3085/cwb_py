@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, request, abort
 
 from linebot import (
@@ -28,6 +29,11 @@ line_bot_api = LineBotApi('XNUj1qPi/SwRUhXP0HqAlLcP1J3efxOF6SK5eTBhDwxP4oHWYAVSW
 # Channel Secret
 handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
+
+@app.route('/repeat', methods=['GET', 'POST'])
+def repeatResponse():
+    print(request.get_data(as_text=True))
+    return 'OK'
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
