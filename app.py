@@ -36,7 +36,7 @@ def repeatResponse():
     password = request.args.get('password')
     print(username)
     print(password)
-    return 'OK'
+    return 'OK'+'<h2>'+f'{username}'
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
