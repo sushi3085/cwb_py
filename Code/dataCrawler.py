@@ -17,7 +17,11 @@ def wrapStamp(stamp:str):
 		result += ch
 	return result
 
-def getRadarData() -> list:
+def getRadarData() -> 'list[list, str]':
+	'''
+	return sequence data in list[int] format
+	return time stamp in string format
+	'''
 	ss = requests.Session()
 	response = ss.get(RADAR_URL)
 	content = json.loads(response.text)
@@ -31,6 +35,10 @@ def getRadarData() -> list:
 	# data = np.reshape(data, (881, 921))
 	
 	return data, wrapStamp(stamp)
+
+def dumpRadarData(data, stamp) -> None:
+	with open(f'data/{wrapStamp(stamp)}.txt', 'w') as f:
+		f.write(json.dumps(data))
 
 def main():
 	radarData , timeStamp = getRadarData()
