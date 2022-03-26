@@ -20,10 +20,12 @@ from Function import *
 import tempfile, os
 import datetime
 import time
+import threading
+import requests
 #======python的函數庫==========
 
 #======self written==========
-from Code.dataCrawler import getRadarData
+from Code.dataCrawler import dumpRadarData, getRadarData
 import numpy as np
 #======self written==========
 
@@ -106,3 +108,12 @@ import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+    threads = threading.Thread
+
+
+def storeData():
+    while True:
+        data, stamp = getRadarData()
+        dumpRadarData(data, stamp)
+        # if file is larger than five, delete oldest file
+        # store time stamp in an array not in array than delete it
