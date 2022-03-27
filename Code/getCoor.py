@@ -13,13 +13,11 @@ def printCoor(string:str):
 	loLeft += loRight/60
 	laLeft += laRight/60
 
-	print((float(loLeft)-O[0])/resolution)
-	print((float(laLeft)-O[1])/resolution)
+	print(round((float(loLeft)-O[0])/resolution))
+	print(round((float(laLeft)-O[1])/resolution))
 
 
 if __name__ == "__main__":
-	import math
 	while True:
 		string = input()
 		printCoor(string)
-		print(1/math.log(2))

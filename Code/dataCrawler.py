@@ -27,7 +27,7 @@ def getRadarData() -> 'list[list, str]':
 	content = json.loads(response.text)
 
 	data = content['cwbopendata']['dataset']['contents']['content']
-	stamp = content['cwbopendata']['sent']
+	stamp = content['cwbopendata']['dataset']['datasetInfo']['parameterSet']['parameter'][3]['parameterValue']
 
 	data = data.split(",")
 	data = list(map(toNum, data))
@@ -35,6 +35,21 @@ def getRadarData() -> 'list[list, str]':
 	# data = np.reshape(data, (881, 921))
 	
 	return data, wrapStamp(stamp)
+
+def getRainData() -> 'list[list, str]':
+	ss = requests.Session()
+	response = ss.get(RAIN_URL)
+	content = json.loads(response.text)
+
+	data = content['cwbopendata']['dataset']['contents']['content']
+	stamp = content['cwbopendata']['dataset']['datasetInfo']['parameterSet']['parameter'][2]['parameterValue']
+
+	data = data.split(",")
+	data = list(map(toNum, data))
+
+	# data = np.reshape(data, (881, 921))
+	
+	return data, wrapStamp(stamp)+"_RAIN"
 
 def dumpRadarData(data, stamp) -> None:
 	with open(f'data/{wrapStamp(stamp)}.txt', 'w') as f:
