@@ -35,9 +35,9 @@ def dBZ_to_Z(dBZ):
 
 
 if __name__ == '__main__':
-    with open("data/2022-03-26T23_10_00+08_00_RAIN.txt") as f:
+    with open("../data/2022-03-26T23_10_00+08_00_RAIN.txt") as f:
         rainData = json.loads(f.readline())
-    with open("data/2022-03-26T23_10_00+08_00.txt") as f:
+    with open("../data/2022-03-26T23_10_00+08_00.txt") as f:
         radarData = json.loads(f.readline())
     radarData = numpy.reshape(radarData, (881, 921))
     rainData = numpy.reshape(rainData, (95, 75))
