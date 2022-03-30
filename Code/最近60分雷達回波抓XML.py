@@ -56,13 +56,13 @@ def main():
                 datas = xml.parse(response.text)
                 data = datas['cwbopendata']['dataset']['contents']['content'].split(',')
                 data = list(map(toNum, data))
-                data = numpy.reshape(data, (921, 881))
+                data = numpy.reshape(data, (881, 921))
                 # data = convolution(data)
                 with open("60min_data/" + k, 'w') as f:
                     f.write('[')
                     for i, raw in enumerate(data):
                         f.write(json.dumps(list(raw)))
-                        if i != 920:
+                        if i != 880:
                             f.write(',')
                     f.write(']')
 

@@ -11,6 +11,14 @@ def Q_cMS(velocity, area):
     return velocity * area
 
 
+def Q_CIA(C, I, A):
+    return
+
+
+def river_water_level(Q, V, width):
+    return Q / V / width
+
+
 if __name__ == '__main__':
-    print(Q_cMS(manning_velocity(10, 5, 0.05), 50))
+    print(manning_velocity(10, 5, 0.05), 'm/s')
     pass

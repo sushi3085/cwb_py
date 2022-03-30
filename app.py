@@ -1,5 +1,5 @@
-from crypt import methods
-from flask import Flask, request, abort
+# from crypt import methods
+from flask import Flask, request, abort, jsonify
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -43,9 +43,10 @@ def repeatResponse():
     password = request.args.get('password')
     print(username)
     print(password)
-    with open('網頁/index.html', 'r') as f:
-        return f.readlines()
-    return 'OK'+'<h2>'+f'{username}, {request.data}'
+    return jsonify({"names":["JHOH","ELEN","ERIX","BOB",username, password]})
+    # with open('網頁/index.html', 'r') as f:
+    #     return f.readlines()
+    # return 'OK'+'<h2>'+f'{username}, {request.data}'
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
@@ -102,9 +103,9 @@ def welcome(event):
     name = profile.display_name
     message = TextSendMessage(text=f'{name}歡迎加入')
     line_bot_api.reply_message(event.reply_token, message)
-        
-        
-import os
+
+
+# import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
