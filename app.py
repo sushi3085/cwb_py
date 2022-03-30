@@ -43,6 +43,12 @@ def repeatResponse():
     password = request.args.get('password')
     print(username)
     print(password)
+    if username == None:
+        return jsonify(
+            {
+                "no user name": True
+            }
+        )
     with open('Code/alert/alert') as f:
         f.write(username+', ')
     with open('Code/alert/alert') as f:
