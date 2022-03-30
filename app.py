@@ -49,9 +49,9 @@ def repeatResponse():
                 "no user name": True
             }
         )
-    with open('Code/alert/alert') as f:
+    with open('Code/alert/alert', 'w') as f:
         f.write(username+', ')
-    with open('Code/alert/alert') as f:
+    with open('Code/alert/alert', 'r') as f:
         result = f.readline()
 
     return jsonify(
