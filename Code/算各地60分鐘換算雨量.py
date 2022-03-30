@@ -36,6 +36,16 @@ class RainCalculator:
                     self.__update_rain_桶後溪營地()
                     self.__update_rain_八煙野溪溫泉()
                     self.__update_rain_天狗溪溫泉()
+                    self.__update_rain_馬陵溫泉()
+                    self.__update_rain_精英野溪溫泉()
+                    self.__update_rain_栗松溫泉()
+                    self.__update_rain_流霞谷親水烤肉園區()
+                    self.__update_rain_八度野溪溫泉區()
+                    self.__update_rain_梅淮露營區()
+                    self.__update_rain_五六露營農場()
+                    self.__update_rain_祕密基地露營區()
+                    self.__update_rain_瑞岩溫泉野溪邊露營()
+                    self.__update_rain_金崙溫泉野溪露營區()
 
     def check(self):
         # TODO : implement check and add into alert file
@@ -107,6 +117,7 @@ class RainCalculator:
         self.location_rain[4] += self.__dBZ_to_R(average_dbz)
         return
 
+    # [5]
     def __update_rain_武界露營(self):
         # 右上(493, 478)
         # 右下(493, 476)
@@ -168,13 +179,105 @@ class RainCalculator:
         # 右下(525, 520)
         # 左上(522, 524)
         # 左下(522, 520)
-        dbz = 0
+        # dbz = 0
         for x in range(522, 525 + 1):
             for y in range(520, 524 + 1):
-                dbz += max(0, self.radar_data[y, x])
-        average_dbz = dbz
-        self.location_rain[9] += self.__dBZ_to_R(average_dbz)
+                self.location_rain[9] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+        # average_dbz = dbz
+        # self.location_rain[9] += self.__dBZ_to_R(average_dbz)
         return
+
+    # [10]
+    def __update_rain_馬陵溫泉(self):
+        # 右上(486, 498)
+        # 右下(486, 497)
+        # 左上(485, 498)
+        # 左下(485, 497)
+        for x in range(485, 486 + 1):
+            for y in range(497, 498 + 1):
+                self.location_rain[10] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_精英野溪溫泉(self):
+        # 右上(502, 484)
+        # 右下(502, 481)
+        # 左上(500, 484)
+        # 左下(500, 481)
+        for x in range(500, 502 + 1):
+            for y in range(481, 484 + 1):
+                self.location_rain[11] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_栗松溫泉(self):
+        # 右上(485, 416)
+        # 右下(485, 415)
+        # 左上(481, 416)
+        # 左下(481, 415)
+        for x in range(481, 485 + 1):
+            for y in range(415, 416 + 1):
+                self.location_rain[12] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_流霞谷親水烤肉園區(self):
+        # 右上(513, 546)
+        # 右下(513, 544)
+        # 左上(511, 546)
+        # 左下(511, 544)
+        for x in range(511, 513 + 1):
+            for y in range(544, 546 + 1):
+                self.location_rain[13] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_八度野溪溫泉區(self):
+        # 右上(506, 542)
+        # 右下(506, 541)
+        # 左上(505, 542)
+        # 左下(505, 541)
+        for x in range(505, 506 + 1):
+            for y in range(541, 542 + 1):
+                self.location_rain[14] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    # [15]
+    def __update_rain_梅淮露營區(self):
+        # 右上(499, 533)
+        # 右下(499, 530)
+        # 左上(495, 533)
+        # 左下(495, 530)
+        for x in range(495, 499 + 1):
+            for y in range(530, 533 + 1):
+                self.location_rain[15] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_五六露營農場(self):
+        # 右上(492, 485)
+        # 右下(492, 482)
+        # 左上(490, 485)
+        # 左下(490, 482)
+        for x in range(490, 492 + 1):
+            for y in range(482, 485 + 1):
+                self.location_rain[16] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_祕密基地露營區(self):
+        # 右上(524, 535)
+        # 右下(524, 533)
+        # 左上(522, 535)
+        # 左下(522, 533)
+        for x in range(522, 524 + 1):
+            for y in range(533, 535 + 1):
+                self.location_rain[17] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_瑞岩溫泉野溪邊露營(self):
+        # 右上(498, 498)
+        # 右下(498, 494)
+        # 左上(495, 498)
+        # 左下(495, 494)
+        for x in range(495, 498 + 1):
+            for y in range(494, 498 + 1):
+                self.location_rain[18] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
+
+    def __update_rain_金崙溫泉野溪露營區(self):
+        # 右上(468, 364)
+        # 右下(468, 361)
+        # 左上(460, 364)
+        # 左下(460, 361)
+        for x in range(460, 468 + 1):
+            for y in range(361, 364 + 1):
+                self.location_rain[19] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
 
 
 if __name__ == '__main__':
@@ -182,3 +285,6 @@ if __name__ == '__main__':
     rain_calculator.update()
     rain_calculator.check()
     rain_calculator.print_location_rain()
+    print(
+        rain_calculator.location_rain[11]
+    )
