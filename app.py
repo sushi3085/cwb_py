@@ -43,7 +43,17 @@ def repeatResponse():
     password = request.args.get('password')
     print(username)
     print(password)
-    return jsonify({"names":["JHOH","ELEN","ERIX","BOB",username, password]})
+    with open('Code/alert/alert') as f:
+        f.write(username+', ')
+    with open('Code/alert/alert') as f:
+        result = f.readline()
+
+    return jsonify(
+        {
+            "names":["JHOH","ELEN","ERIX","BOB",username, password],
+            "responses":result
+        }
+    )
     # with open('網頁/index.html', 'r') as f:
     #     return f.readlines()
     # return 'OK'+'<h2>'+f'{username}, {request.data}'
