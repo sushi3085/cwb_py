@@ -49,8 +49,8 @@ def repeatResponse():
                 "no user name": True
             }
         )
-    with open('Code/alert/alert', 'w') as f:
-        f.write(username+', ')
+    with open('Code/alert/alert', 'a') as f:
+        f.write(username+',')
     with open('Code/alert/alert', 'r') as f:
         result = f.readline()
 
