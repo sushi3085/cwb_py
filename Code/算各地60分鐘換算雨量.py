@@ -2,11 +2,48 @@ import os
 import numpy
 import json
 
+from 曼寧等公式 import *
+
 
 class RainCalculator:
     def __init__(self):
         self.radar_data = None
         self.location_rain = [0] * 40
+        self.slope = numpy.concatenate((
+            numpy.array(
+                [5, 5, 5, 6, 8, 6, 7, 5, 2, 5, 7, 8, 8, 7, 5, 5, 5, 5, 8, 6]  # 最後一筆當作是6，沒資料
+            ) / 100,
+            numpy.array(
+                [6, 6, 5, 8, 7, 8, 8, 8, 7, 6, 8, 7, 9, 6, 6, 5, 6, 5, 6, 7, 6]
+            ) / 100
+        ), axis=0
+        )
+
+        # m
+        self.width = [
+                         6.35, 19.75, 17.85, 20.3, 16.15, 14.6, 11.5, 9, 6.9, 6.75, 15.85, 8.86, 22.5, 13, 11.5, 12.5, 12, 27.4, 10.5, 28,
+                     ] + \
+                     [
+                         17, 60, 41, 11, 19, 43.5, 27, 18, 18, 33, 13, 14.5, 15
+                     ]
+
+        # m
+        self.depth = [
+                         1.55, 1.55, 1.55, 1.3, 1.6, 1.3, 1.5, 1.5, 1.5, 1.7, 1.35, 1.3, 1.5, 1.55, 1.5, 1.2, 1.3, 1.7, 1, 1.4,
+                     ] + \
+                     [
+                         1.5, 1.5, 1.3, 1.3, 1.1, 1.13, 1.31, 1.6, 1.6, 2.4, 2, 2
+                     ]
+
+        # km
+        self.distance = [
+                            3.2, 8.1, 8.5, 7.6, 6.3, 11.5, 10.2, 2.5, 3, 1.92, 1.14, 4.3, 9.3, 2.78, 2.5, 4.6, 5.2, 2.4, 0.47, 10,
+                        ] + \
+                        [
+                            1.9, 1.1, 6.2, 7, 0.47, 1.35, 1.59, 2.34, 2.35, 0.52, 1.5, 2.22, 2.47
+                        ]
+
+        self.area_ha = [1000] * 39
 
     def __dBZ_to_R(self, dBZ):
         # // Z = 300(R) ^ 1.4
@@ -15,9 +52,12 @@ class RainCalculator:
         # let B = 1.65;
         b = 1.65
         # // Z = 10 ^ (dBZ / 10)
-        Z = 10 ** (dBZ / 10)
+        if dBZ == 0:
+            return 0
+        Z = 10 ** dBZ
         # let Z = Math.pow(10, dBZ / 10.0)
-        return (Z / a) ** (1 / b)
+        return (a**(-1/b)) * (10**(dBZ/(10**b)))
+        # return (Z / a) ** (1 / b)
 
     def update(self):
         self.location_rain = [0] * 40
@@ -26,50 +66,59 @@ class RainCalculator:
                 with open(os.path.join(dirname, filename)) as f:
                     self.radar_data = numpy.array(json.loads(f.readline()))
                     # all location code
+                    # region
                     self.__update_rain_大豹溪()
                     self.__update_rain_泰崗野溪溫泉()
                     self.__update_rain_秀巒野溪溫泉()
                     self.__update_rain_琉璃灣露營區()
-                    self.__update_rain_邦腹溪營地()
+                    self.__update_rain_邦腹溪營地()#4
                     self.__update_rain_武界露營()
                     self.__update_rain_二山子野溪溫泉()
                     self.__update_rain_桶後溪營地()
                     self.__update_rain_八煙野溪溫泉()
-                    self.__update_rain_天狗溪溫泉()
+                    self.__update_rain_天狗溪溫泉()#9
                     self.__update_rain_馬陵溫泉()
                     self.__update_rain_精英野溪溫泉()
                     self.__update_rain_栗松溫泉()
                     self.__update_rain_流霞谷親水烤肉園區()
-                    self.__update_rain_八度野溪溫泉區()
+                    self.__update_rain_八度野溪溫泉區()#14
                     self.__update_rain_梅淮露營區()
                     self.__update_rain_五六露營農場()
                     self.__update_rain_祕密基地露營區()
                     self.__update_rain_瑞岩溫泉野溪邊露營()
-                    self.__update_rain_金崙溫泉野溪露營區()
+                    self.__update_rain_金崙溫泉野溪露營區()#19
+                    # endregion
                     #
-                    self.__update_rain_嘎拉賀溫泉()
+                    self.__update_rain_嘎拉賀溫泉()#20
                     self.__update_rain_四稜溫泉()
                     self.__update_rain_神駒谷溫泉()
                     self.__update_rain_太魯灣溪溫泉()
-                    self.__update_rain_瑞岩溫泉()
+                    self.__update_rain_瑞岩溫泉()#24
                     self.__update_rain_紅香溫泉()
                     self.__update_rain_萬大南溪溫泉()
                     self.__update_rain_樂樂谷溫泉()
                     self.__update_rain_玉穗溫泉()
-                    self.__update_rain_荖荖溫泉()
+                    self.__update_rain_荖荖溫泉()#29
                     self.__update_rain_五區_拉卡_溫泉()
                     self.__update_rain_文山溫泉_有測站()
                     self.__update_rain_彩霞溫泉()
-                    self.__update_rain_碧山溫泉()
-                    self.__update_rain_轆轆溫泉()
-                    self.__update_rain_暇末溫泉()
-                    self.__update_rain_都飛魯溫泉()
-                    self.__update_rain_比魯溫泉()
-                    self.__update_rain_普沙羽揚溫泉()
+                    self.__update_rain_碧山溫泉()  # no WDD
+                    self.__update_rain_轆轆溫泉()  # no WDD #34
+                    self.__update_rain_暇末溫泉()  # no WDD
+                    self.__update_rain_都飛魯溫泉()  # no WDD
+                    self.__update_rain_比魯溫泉()  # no WDD
+                    self.__update_rain_普沙羽揚溫泉()  # no WDD
 
     def check(self):
         # TODO : implement check and add into alert file
-        print(NotImplemented)
+        with open('alert/alert', 'w') as f:
+            for i in range(len(self.area_ha)):
+                q = Q_CIA(self.location_rain[i], self.area_ha[i])
+                v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
+                h = H(q, v, self.depth[i])
+                print(i, " position -> river level rise ", h)
+                if h >= 40:
+                    f.write(f"{i}\n")
         return
 
     def print_location_rain(self):
@@ -77,7 +126,9 @@ class RainCalculator:
             print(f"{i}: {self.location_rain[i]}", f"{i + 1}: {self.location_rain[i + 1]}")
         pass
 
-    def __update_rain_大豹溪(self):  # 15*1.25*1.25 km*km
+    # region
+    # 15*1.25*1.25 km*km
+    def __update_rain_大豹溪(self):
         # 516~518
         # 544~548
         dbZ = 0
@@ -91,7 +142,8 @@ class RainCalculator:
         self.location_rain[0] += self.__dBZ_to_R(average_dbZ)
         return
 
-    def __update_rain_泰崗野溪溫泉(self):# 4*5
+    # 4*5
+    def __update_rain_泰崗野溪溫泉(self):
         # 506~509
         # 521~525
         dbz = 0
@@ -105,12 +157,14 @@ class RainCalculator:
         # self.location_rain[2] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_秀巒野溪溫泉(self):# 20
+    # 20
+    def __update_rain_秀巒野溪溫泉(self):
         # updated at self.location_rain[1]
         self.location_rain[2] = self.location_rain[1]
         return
 
-    def __update_rain_琉璃灣露營區(self):# 6*4
+    # 6*4
+    def __update_rain_琉璃灣露營區(self):
         # 458~463
         # 394~397
         dbz = 0
@@ -122,7 +176,8 @@ class RainCalculator:
         average_dbz = dbz / area
         self.location_rain[3] += self.__dBZ_to_R(average_dbz)
 
-    def __update_rain_邦腹溪營地(self):# 3*4
+    # 3*4
+    def __update_rain_邦腹溪營地(self):
         # 右上(458, 404)
         # 右下(458, 401)
         # 左上(456, 404)
@@ -138,7 +193,8 @@ class RainCalculator:
         return
 
     # [5]
-    def __update_rain_武界露營(self):# 6*3
+    # 6*3
+    def __update_rain_武界露營(self):
         # 右上(493, 478)
         # 右下(493, 476)
         # 左上(488, 478)
@@ -150,12 +206,11 @@ class RainCalculator:
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
         average_dbz = dbz / area
-        print(average_dbz)
-        print('---')
         self.location_rain[5] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_二山子野溪溫泉(self):# 5*3
+    # 5*3
+    def __update_rain_二山子野溪溫泉(self):
         # 右上(506, 475)
         # 右下(506, 473)
         # 左上(502, 475)
@@ -170,7 +225,8 @@ class RainCalculator:
         self.location_rain[6] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_桶後溪營地(self):# 9*4
+    # 9*4
+    def __update_rain_桶後溪營地(self):
         # 右上(525, 548)
         # 右下(525, 545)
         # 左上(533, 548)
@@ -185,7 +241,8 @@ class RainCalculator:
         self.location_rain[7] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_八煙野溪溫泉(self):#4*3
+    # 4*3
+    def __update_rain_八煙野溪溫泉(self):
         # 右上(536, 576)
         # 右下(536, 574)
         # 左上(533, 576)
@@ -200,7 +257,8 @@ class RainCalculator:
         self.location_rain[8] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_天狗溪溫泉(self):# 4*5
+    # 4*5
+    def __update_rain_天狗溪溫泉(self):
         # 右上(525, 524)
         # 右下(525, 520)
         # 左上(522, 524)
@@ -216,7 +274,8 @@ class RainCalculator:
         return
 
     # [10]
-    def __update_rain_馬陵溫泉(self):# 2*2
+    # 2*2
+    def __update_rain_馬陵溫泉(self):
         # 右上(486, 498)
         # 右下(486, 497)
         # 左上(485, 498)
@@ -231,7 +290,8 @@ class RainCalculator:
         self.location_rain[10] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_精英野溪溫泉(self):# 3*4
+    # 3*4
+    def __update_rain_精英野溪溫泉(self):
         # 右上(502, 484)
         # 右下(502, 481)
         # 左上(500, 484)
@@ -245,7 +305,8 @@ class RainCalculator:
         avg_dbz = dbz / area
         self.location_rain[11] = self.__dBZ_to_R(avg_dbz)
 
-    def __update_rain_栗松溫泉(self):# 5*2
+    # 5*2
+    def __update_rain_栗松溫泉(self):
         # 右上(485, 416)
         # 右下(485, 415)
         # 左上(481, 416)
@@ -259,7 +320,8 @@ class RainCalculator:
             avg_dbz = dbz / area
             self.location_rain[12] = self.__dBZ_to_R(avg_dbz)
 
-    def __update_rain_流霞谷親水烤肉園區(self):# 3*3
+    # 3*3
+    def __update_rain_流霞谷親水烤肉園區(self):
         # 右上(513, 546)
         # 右下(513, 544)
         # 左上(511, 546)
@@ -274,7 +336,8 @@ class RainCalculator:
         self.location_rain[13] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_八度野溪溫泉區(self):# 2 * 2
+    # 2 * 2
+    def __update_rain_八度野溪溫泉區(self):
         # 右上(506, 542)
         # 右下(506, 541)
         # 左上(505, 542)
@@ -290,7 +353,8 @@ class RainCalculator:
         return
 
     # [15]
-    def __update_rain_梅淮露營區(self):#5*4
+    # 5*4
+    def __update_rain_梅淮露營區(self):
         # 右上(499, 533)
         # 右下(499, 530)
         # 左上(495, 533)
@@ -305,7 +369,8 @@ class RainCalculator:
         self.location_rain[15] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_五六露營農場(self):# 3*4
+    # 3*4
+    def __update_rain_五六露營農場(self):
         # 右上(492, 485)
         # 右下(492, 482)
         # 左上(490, 485)
@@ -320,7 +385,8 @@ class RainCalculator:
         self.location_rain[16] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_祕密基地露營區(self):# 3*3
+    # 3*3
+    def __update_rain_祕密基地露營區(self):
         # 右上(524, 535)
         # 右下(524, 533)
         # 左上(522, 535)
@@ -335,7 +401,8 @@ class RainCalculator:
         self.location_rain[17] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_瑞岩溫泉野溪邊露營(self):# 4*5
+    # 4*5
+    def __update_rain_瑞岩溫泉野溪邊露營(self):
         # 右上(498, 498)
         # 右下(498, 494)
         # 左上(495, 498)
@@ -350,7 +417,8 @@ class RainCalculator:
         self.location_rain[18] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_金崙溫泉野溪露營區(self):# 9*4
+    # 9*4
+    def __update_rain_金崙溫泉野溪露營區(self):
         # 右上(468, 364)
         # 右下(468, 361)
         # 左上(460, 364)
@@ -370,7 +438,8 @@ class RainCalculator:
     # TR
     # BR
     # [20]
-    def __update_rain_嘎拉賀溫泉(self):# 6*3
+    # 6*3
+    def __update_rain_嘎拉賀溫泉(self):
         # 512, 530
         # 508, 528
         # 513, 530
@@ -385,7 +454,8 @@ class RainCalculator:
         self.location_rain[20] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_四稜溫泉(self):# 4*7
+    # 4*7
+    def __update_rain_四稜溫泉(self):
         dbz = 0
         area = 0
         for x in range(514, 517 + 1):
@@ -396,7 +466,8 @@ class RainCalculator:
         self.location_rain[21] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_神駒谷溫泉(self):# 10*12
+    # 10*12
+    def __update_rain_神駒谷溫泉(self):
         dbz = 0
         area = 0
         for x in range(479, 488 + 1):
@@ -407,7 +478,8 @@ class RainCalculator:
         self.location_rain[22] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_太魯灣溪溫泉(self):# 10*2
+    # 10*2
+    def __update_rain_太魯灣溪溫泉(self):
         dbz = 0
         area = 0
         for x in range(494, 503 + 1):
@@ -418,7 +490,8 @@ class RainCalculator:
         self.location_rain[23] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_瑞岩溫泉(self):# 2*2
+    # 2*2
+    def __update_rain_瑞岩溫泉(self):
         dbz = 0
         area = 0
         for x in range(492, 493 + 1):
@@ -430,7 +503,8 @@ class RainCalculator:
         return
 
     # [25]
-    def __update_rain_紅香溫泉(self):#7*7
+    # 7*7
+    def __update_rain_紅香溫泉(self):
         dbz = 0
         area = 0
         for x in range(491, 497 + 1):
@@ -441,7 +515,8 @@ class RainCalculator:
         self.location_rain[25] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_萬大南溪溫泉(self):#12*4
+    # 12*4
+    def __update_rain_萬大南溪溫泉(self):
         dbz = 0
         area = 0
         for x in range(490, 501 + 1):
@@ -452,7 +527,8 @@ class RainCalculator:
         self.location_rain[26] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_樂樂谷溫泉(self):#6*5
+    # 6*5
+    def __update_rain_樂樂谷溫泉(self):
         dbz = 0
         area = 0
         for x in range(475, 480 + 1):
@@ -463,7 +539,8 @@ class RainCalculator:
         self.location_rain[27] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_玉穗溫泉(self):#5*3
+    # 5*3
+    def __update_rain_玉穗溫泉(self):
         dbz = 0
         area = 0
         for x in range(464, 468 + 1):
@@ -474,7 +551,8 @@ class RainCalculator:
         self.location_rain[28] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_荖荖溫泉(self):#4*4
+    # 4*4
+    def __update_rain_荖荖溫泉(self):
         dbz = 0
         area = 0
         for x in range(454, 457 + 1):
@@ -486,7 +564,8 @@ class RainCalculator:
         return
 
     # [30]
-    def __update_rain_五區_拉卡_溫泉(self):#5*6
+    # 5*6
+    def __update_rain_五區_拉卡_溫泉(self):
         dbz = 0
         area = 0
         for x in range(535, 539 + 1):
@@ -497,7 +576,8 @@ class RainCalculator:
         self.location_rain[30] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_文山溫泉_有測站(self):#2*2
+    # 2*2
+    def __update_rain_文山溫泉_有測站(self):
         dbz = 0
         area = 0
         for x in range(519, 520 + 1):
@@ -508,7 +588,8 @@ class RainCalculator:
         self.location_rain[31] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_彩霞溫泉(self):#2*2
+    # 2*2
+    def __update_rain_彩霞溫泉(self):
         dbz = 0
         area = 0
         for x in range(485, 486 + 1):
@@ -519,7 +600,8 @@ class RainCalculator:
         self.location_rain[32] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_碧山溫泉(self):# 5*3
+    # 5*3
+    def __update_rain_碧山溫泉(self):
         dbz = 0
         area = 0
         for x in range(473, 477 + 1):
@@ -530,7 +612,8 @@ class RainCalculator:
         self.location_rain[33] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_轆轆溫泉(self):#6*9
+    # 6*9
+    def __update_rain_轆轆溫泉(self):
         dbz = 0
         area = 0
         for x in range(471, 476 + 1):
@@ -542,7 +625,8 @@ class RainCalculator:
         return
 
     # [35]
-    def __update_rain_暇末溫泉(self):#6*9
+    # 6*9
+    def __update_rain_暇末溫泉(self):
         dbz = 0
         area = 0
         for x in range(471, 476 + 1):
@@ -553,7 +637,8 @@ class RainCalculator:
         self.location_rain[35] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_都飛魯溫泉(self):#9*4
+    # 9*4
+    def __update_rain_都飛魯溫泉(self):
         dbz = 0
         area = 0
         for x in range(460, 468 + 1):
@@ -564,7 +649,8 @@ class RainCalculator:
         self.location_rain[36] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_比魯溫泉(self):# 3*4
+    # 3*4
+    def __update_rain_比魯溫泉(self):
         dbz = 0
         area = 0
         for x in range(466, 468 + 1):
@@ -575,7 +661,8 @@ class RainCalculator:
         self.location_rain[37] += self.__dBZ_to_R(average_dbz)
         return
 
-    def __update_rain_普沙羽揚溫泉(self):#3*2
+    # 3*2
+    def __update_rain_普沙羽揚溫泉(self):
         dbz = 0
         area = 0
         for x in range(461, 463 + 1):
@@ -585,10 +672,13 @@ class RainCalculator:
         average_dbz = dbz / area
         self.location_rain[38] += self.__dBZ_to_R(average_dbz)
         return
+    # endregion
 
 
 if __name__ == '__main__':
     rain_calculator = RainCalculator()
     rain_calculator.update()
+    print(len(rain_calculator.area_ha))
+    print(len(rain_calculator.width), len(rain_calculator.depth), len(rain_calculator.slope))
     rain_calculator.check()
     rain_calculator.print_location_rain()

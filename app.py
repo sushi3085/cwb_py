@@ -27,6 +27,7 @@ import requests
 #======self written==========
 from Code.dataCrawler import dumpRadarData, getRadarData
 import numpy as np
+from Code.算各地60分鐘換算雨量 import
 #======self written==========
 
 app = Flask(__name__)
@@ -41,8 +42,6 @@ handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 def repeatResponse():
     username = request.args.get('username')
     password = request.args.get('password')
-    print(username)
-    print(password)
     if username == None:
         return jsonify(
             {
@@ -108,7 +107,8 @@ def handle_message(event):
 
 @handler.add(PostbackEvent)
 def handle_message(event):
-    print(event.postback.data)
+    # print(event.postback.data)
+    return
 
 
 @handler.add(MemberJoinedEvent)
