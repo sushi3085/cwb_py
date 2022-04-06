@@ -104,6 +104,7 @@ UIDS = []
 
 def process():
     while True:
+        time.sleep(8 * 60)
         crl60 = CrawlSixty()
         crl60.main()
 
@@ -116,6 +117,5 @@ def process():
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    while True:
-        process()
-        time.sleep(8 * 60)
+    threading.Thread(target=process).start()
+
