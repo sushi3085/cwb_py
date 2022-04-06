@@ -3,7 +3,7 @@ import requests
 import xmltodict as xml
 import json
 import os
-from .dataCrawler import toNum
+from dataCrawler import toNum
 
 url = "https://opendata.cwb.gov.tw/historyapi/v1/getMetadata/O-A0059-001?Authorization=CWB-41DC9AED-4979-4F29-8CB7-E6BF577E5036&limit=10&offset=1431"
 
@@ -44,14 +44,14 @@ class CrawlSixty:
             time_url_map[self.wrapper(i['dataTime'])] = i['url']
 
         # delete expired file
-        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), 'Code\\60min_data')):
+        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data')):
             for filename in filenames:
                 if filename not in time_url_map.keys():
                     os.remove(os.path.join(dirname, filename))
 
         # write data in to file
         for k, v in time_url_map.items():
-            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), 'Code\\60min_data')):
+            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data')):
                 print('inside...'+dirname)
                 if k not in filenames:
                     response = s.get(v)

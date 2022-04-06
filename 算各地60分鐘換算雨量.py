@@ -61,7 +61,7 @@ class RainCalculator:
 
     def update(self):
         self.location_rain = [0] * 40
-        for dirname, _, filenames in os.walk('60min_data'):
+        for dirname, _, filenames in os.walk('Code/60min_data'):
             for filename in filenames:
                 with open(os.path.join(dirname, filename)) as f:
                     self.radar_data = numpy.array(json.loads(f.readline()))

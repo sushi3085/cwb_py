@@ -1,13 +1,5 @@
 # from crypt import methods
-from flask import Flask, request, abort, jsonify, current_app
-
-from linebot import (
-    LineBotApi, WebhookHandler
-)
-from linebot.exceptions import (
-    InvalidSignatureError
-)
-from linebot.models import *
+from flask import Flask, request, abort, jsonify
 
 # ======這裡是呼叫的檔案內容=====
 from message import *
@@ -16,18 +8,13 @@ from Function import *
 # ======這裡是呼叫的檔案內容=====
 
 # ======python的函數庫==========
-import tempfile, os
-import datetime
+import os
 import time
 import threading
-import requests
 # ======python的函數庫==========
 
 # ======self written==========
-from Code.dataCrawler import dumpRadarData, getRadarData
-import numpy as np
-from Code.算各地60分鐘換算雨量 import RainCalculator
-from Code.最近60分雷達回波抓XML import CrawlSixty
+from 最近60分雷達回波抓XML import CrawlSixty
 
 # ======self written==========
 
@@ -47,6 +34,7 @@ def push_message(push_text_str):
         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
     return push_text_str
 
+
 @app.route("/debug")
 def debug():
     startpath = os.getcwd()
@@ -57,7 +45,7 @@ def debug():
         subindent = ' ' * 4 * (level + 1)
         for f in files:
             print('{}{}'.format(subindent, f))
-    for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), "Code\\60min_data\\")):
+    for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), "60min_data\\")):
         with open(os.path.join(dirname, filenames[0]), 'r') as f:
             data = f.readline()
             print(data[:500])
@@ -138,7 +126,7 @@ def process():
         # rcal = RainCalculator()
         # rcal.update()
         # rcal.check()
-        print("================Loop Done====================")
+        print("================ DONE crawling file====================")
         time.sleep(8 * 60)
 
 
