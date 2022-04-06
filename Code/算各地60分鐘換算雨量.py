@@ -2,7 +2,7 @@ import os
 import numpy
 import json
 
-from 曼寧等公式 import *
+from .曼寧等公式 import *
 
 
 class RainCalculator:
