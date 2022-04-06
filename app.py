@@ -66,7 +66,16 @@ def callback():
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    profile = None
+    try:
+        profile = line_bot_api.get_profile('<user_id>')
+    except Exception as e:
+        pass
+    if profile == None: return
+    UIDS.add(profile)
     msg = event.message.text
+    line_bot_api.push_message(profile, TextSendMessage(text=str(UIDS)))
+
     if '最新合作廠商' in msg:
         message = imagemap_message()
         line_bot_api.reply_message(event.reply_token, message)
@@ -93,7 +102,7 @@ def handle_message(event):
 @handler.add(MemberJoinedEvent)
 def welcome(event):
     uid = event.joined.members[0].user_id
-    UIDS.append(uid)
+    UIDS.add(uid)
     gid = event.source.group_id
     profile = line_bot_api.get_group_member_profile(gid, uid)
     name = profile.display_name
@@ -101,7 +110,7 @@ def welcome(event):
     line_bot_api.reply_message(event.reply_token, message)
 
 
-UIDS = []
+UIDS = set()
 
 
 def process():
