@@ -21,10 +21,10 @@ class RainCalculator:
 
         # m
         self.width = [
-                         6.35, 19.75, 17.85, 20.3, 16.15, 14.6, 11.5, 9, 6.9, 6.75, 15.85, 8.86, 22.5, 13, 11.5, 12.5, 12, 27.4, 10.5, 28,
+                         11, 25.11, 25, 28.6, 18.3, 16.22, 12.89, 12.5, 7.7, 7.4, 21, 8.86, 23, 15, 17, 15, 13, 37.4, 17.5, 37,
                      ] + \
                      [
-                         17, 60, 41, 11, 19, 43.5, 27, 18, 18, 33, 13, 14.5, 15
+                         17, 102, 68, 12, 26, 50, 27, 21, 24, 13, 17, 14.5, 16.5
                      ]
 
         # m
@@ -43,7 +43,7 @@ class RainCalculator:
                             1.9, 1.1, 6.2, 7, 0.47, 1.35, 1.59, 2.34, 2.35, 0.52, 1.5, 2.22, 2.47
                         ]
 
-        self.area_ha = [1000] * 39
+        self.area_ha = [100] * 39
 
     def __dBZ_to_R(self, dBZ):
         # // Z = 300(R) ^ 1.4
@@ -111,12 +111,13 @@ class RainCalculator:
 
     def check(self):
         # TODO : implement check and add into alert file
+        # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
         with open('alert/alert', 'w') as f:
-            for i in range(len(self.area_ha)):
-                q = Q_CIA(self.location_rain[i], self.area_ha[i])
+            for i in range(len(self.depth)):
+                q = Q_CIA(self.location_rain[i], 100) # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
-                h = H(q, v, self.depth[i])
-                print(i, " position -> river level rise ", h)
+                h = H(q, v, self.width[i])
+                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "meters")
                 if h >= 40:
                     f.write(f"{i}\n")
         return
@@ -678,7 +679,8 @@ class RainCalculator:
 if __name__ == '__main__':
     rain_calculator = RainCalculator()
     rain_calculator.update()
-    print(len(rain_calculator.area_ha))
-    print(len(rain_calculator.width), len(rain_calculator.depth), len(rain_calculator.slope))
+    # print(len(rain_calculator.area_ha))
+    # print(len(rain_calculator.width), len(rain_calculator.depth), len(rain_calculator.slope))
+    rain_calculator.location_rain[17] = 140
     rain_calculator.check()
-    rain_calculator.print_location_rain()
+    # rain_calculator.print_location_rain()

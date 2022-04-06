@@ -9,59 +9,42 @@ from linebot.exceptions import (
 )
 from linebot.models import *
 
-
-#======這裡是呼叫的檔案內容=====
+# ======這裡是呼叫的檔案內容=====
 from message import *
 from new import *
 from Function import *
-#======這裡是呼叫的檔案內容=====
+# ======這裡是呼叫的檔案內容=====
 
-#======python的函數庫==========
+# ======python的函數庫==========
 import tempfile, os
 import datetime
 import time
 import threading
 import requests
-#======python的函數庫==========
+# ======python的函數庫==========
 
-#======self written==========
+# ======self written==========
 from Code.dataCrawler import dumpRadarData, getRadarData
 import numpy as np
-from Code.算各地60分鐘換算雨量 import
-#======self written==========
+from Code.算各地60分鐘換算雨量 import RainCalculator
+from Code.最近60分雷達回波抓XML import CrawlSixty
+
+# ======self written==========
 
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 # Channel Access Token
-line_bot_api = LineBotApi('XNUj1qPi/SwRUhXP0HqAlLcP1J3efxOF6SK5eTBhDwxP4oHWYAVSWKOfuE1KZUxO51bRlcy442SS+DwvF9wpA86ug+suW+MLCgeW/VWoKe7Ts9N3T4YjFUfvY+M2pliKPH5HYNhNq/N8yHBIJYYfZAdB04t89/1O/w1cDnyilFU=')
+line_bot_api = LineBotApi(
+    'XNUj1qPi/SwRUhXP0HqAlLcP1J3efxOF6SK5eTBhDwxP4oHWYAVSWKOfuE1KZUxO51bRlcy442SS+DwvF9wpA86ug+suW+MLCgeW/VWoKe7Ts9N3T4YjFUfvY+M2pliKPH5HYNhNq/N8yHBIJYYfZAdB04t89/1O/w1cDnyilFU=')
 # Channel Secret
 handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 
-@app.route('/repeat', methods=['GET', 'POST'])
-def repeatResponse():
-    username = request.args.get('username')
-    password = request.args.get('password')
-    if username == None:
-        return jsonify(
-            {
-                "no user name": True
-            }
-        )
-    with open('Code/alert/alert', 'a') as f:
-        f.write(username+',')
-    with open('Code/alert/alert', 'r') as f:
-        result = f.readline()
+@app.route("/push/<string:push_text_str>")
+def push_message(push_text_str):
+    for uid in UIDS:
+        line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
 
-    return jsonify(
-        {
-            "names":["JHOH","ELEN","ERIX","BOB",username, password],
-            "responses":result
-        }
-    )
-    # with open('網頁/index.html', 'r') as f:
-    #     return f.readlines()
-    # return 'OK'+'<h2>'+f'{username}, {request.data}'
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
@@ -105,32 +88,34 @@ def handle_message(event):
         message = TextSendMessage(text=msg)
         line_bot_api.reply_message(event.reply_token, message)
 
-@handler.add(PostbackEvent)
-def handle_message(event):
-    # print(event.postback.data)
-    return
-
 
 @handler.add(MemberJoinedEvent)
 def welcome(event):
     uid = event.joined.members[0].user_id
+    UIDS.append(uid)
     gid = event.source.group_id
     profile = line_bot_api.get_group_member_profile(gid, uid)
     name = profile.display_name
     message = TextSendMessage(text=f'{name}歡迎加入')
     line_bot_api.reply_message(event.reply_token, message)
 
+UIDS = []
+
+
+def process():
+    while True:
+        crl60 = CrawlSixty()
+        crl60.main()
+
+        rcal = RainCalculator()
+        rcal.update()
+        rcal.check()
+
 
 # import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-    threads = threading.Thread
-
-
-def storeData():
     while True:
-        data, stamp = getRadarData()
-        dumpRadarData(data, stamp)
-        # if file is larger than five, delete oldest file
-        # store time stamp in an array not in array than delete it
+        process()
+        time.sleep(8 * 60)
