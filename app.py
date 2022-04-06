@@ -1,5 +1,5 @@
 # from crypt import methods
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, current_app
 
 from linebot import (
     LineBotApi, WebhookHandler
@@ -42,6 +42,7 @@ handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 @app.route("/push/<string:push_text_str>")
 def push_message(push_text_str):
+    current_app.logger.info(push_text_str)
     for uid in UIDS:
         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
 
@@ -99,6 +100,7 @@ def welcome(event):
     message = TextSendMessage(text=f'{name}歡迎加入')
     line_bot_api.reply_message(event.reply_token, message)
 
+
 UIDS = []
 
 
@@ -119,4 +121,3 @@ if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
     threading.Thread(target=process).start()
-
