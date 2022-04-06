@@ -44,14 +44,14 @@ class CrawlSixty:
             time_url_map[self.wrapper(i['dataTime'])] = i['url']
 
         # delete expired file
-        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data')):
+        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data').replace('\\','/')):
             for filename in filenames:
                 if filename not in time_url_map.keys():
                     os.remove(os.path.join(dirname, filename))
 
         # write data in to file
         for k, v in time_url_map.items():
-            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data')):
+            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data').replace('\\','/')):
                 print('inside...'+dirname)
                 if k not in filenames:
                     response = s.get(v)
