@@ -44,19 +44,15 @@ class CrawlSixty:
             time_url_map[self.wrapper(i['dataTime'])] = i['url']
 
         # delete expired file
-        # debug for heroku
-        for dirname, _, filenames in os.walk(os.getcwd()):
-            print(filenames)
-        # end debug
-        print(os.getcwd())
-        for dirname, _, filenames in os.walk(os.getcwd()+'Code/60min_data'):
+        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), 'Code\\60min_data')):
             for filename in filenames:
                 if filename not in time_url_map.keys():
                     os.remove(os.path.join(dirname, filename))
 
         # write data in to file
         for k, v in time_url_map.items():
-            for dirname, _, filenames in os.walk(os.getcwd()+'Code/60min_data'):
+            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), 'Code\\60min_data')):
+                print('inside...'+dirname)
                 if k not in filenames:
                     response = s.get(v)
                     datas = xml.parse(response.text)

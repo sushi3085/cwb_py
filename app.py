@@ -47,6 +47,14 @@ def push_message(push_text_str):
         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
     return push_text_str
 
+@app.route("/debug")
+def debug():
+    for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), "Code\\60min_data\\")):
+        with open(os.path.join(dirname, filenames[0]), 'r') as f:
+            data = f.readline()
+            print(data[:500])
+    return jsonify(data)
+
 
 # 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
@@ -119,9 +127,9 @@ def process():
         crl60 = CrawlSixty()
         crl60.main()
 
-        rcal = RainCalculator()
-        rcal.update()
-        rcal.check()
+        # rcal = RainCalculator()
+        # rcal.update()
+        # rcal.check()
         print("================Loop Done====================")
         time.sleep(8 * 60)
 
