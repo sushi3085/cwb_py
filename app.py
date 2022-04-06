@@ -111,6 +111,7 @@ def process():
         rcal = RainCalculator()
         rcal.update()
         rcal.check()
+        print("================Loop Done====================")
 
 
 # import os
