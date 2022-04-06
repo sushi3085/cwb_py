@@ -49,6 +49,14 @@ def push_message(push_text_str):
 
 @app.route("/debug")
 def debug():
+    startpath = os.getcwd()
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        print('{}{}/'.format(indent, os.path.basename(root)))
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            print('{}{}'.format(subindent, f))
     for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), "Code\\60min_data\\")):
         with open(os.path.join(dirname, filenames[0]), 'r') as f:
             data = f.readline()
