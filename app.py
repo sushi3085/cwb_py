@@ -42,9 +42,10 @@ handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 @app.route("/push/<string:push_text_str>")
 def push_message(push_text_str):
-    current_app.logger.info(push_text_str)
+    print(push_text_str)
     for uid in UIDS:
         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
+    return push_text_str
 
 
 # 監聽所有來自 /callback 的 Post Request
@@ -115,7 +116,6 @@ UIDS = set()
 
 def process():
     while True:
-        time.sleep(8 * 60)
         crl60 = CrawlSixty()
         crl60.main()
 
@@ -123,10 +123,13 @@ def process():
         rcal.update()
         rcal.check()
         print("================Loop Done====================")
+        time.sleep(8 * 60)
 
 
 # import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    print('starting')
     threading.Thread(target=process).start()
+    print("finished")
+    app.run(host='0.0.0.0', port=port)

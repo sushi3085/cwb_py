@@ -112,7 +112,7 @@ class RainCalculator:
     def check(self):
         # TODO : implement check and add into alert file
         # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
-        with open('alert/alert', 'w') as f:
+        with open('Code/alert/alert', 'w') as f:
             for i in range(len(self.depth)):
                 q = Q_CIA(self.location_rain[i], 100) # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])

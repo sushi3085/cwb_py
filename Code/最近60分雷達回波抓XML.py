@@ -44,14 +44,16 @@ class CrawlSixty:
             time_url_map[self.wrapper(i['dataTime'])] = i['url']
 
         # delete expired file
-        for dirname, _, filenames in os.walk('60min_data'):
+        # print(os.getcwd())
+        for dirname, _, filenames in os.walk('Code/60min_data'):
             for filename in filenames:
                 if filename not in time_url_map.keys():
                     os.remove(os.path.join(dirname, filename))
 
         # write data in to file
         for k, v in time_url_map.items():
-            for dirname, _, filenames in os.walk('60min_data'):
+            for dirname, _, filenames in os.walk('Code/60min_data'):
+                int('-a')
                 if k not in filenames:
                     response = s.get(v)
                     datas = xml.parse(response.text)
@@ -59,7 +61,7 @@ class CrawlSixty:
                     data = list(map(toNum, data))
                     data = numpy.reshape(data, (881, 921))
                     # data = convolution(data)
-                    with open("60min_data/" + k, 'w') as f:
+                    with open(dirname + '/' + k, 'w') as f:
                         f.write('[')
                         for i, raw in enumerate(data):
                             f.write(json.dumps(list(raw)))
