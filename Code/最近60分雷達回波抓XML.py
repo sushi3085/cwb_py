@@ -3,7 +3,7 @@ import requests
 import xmltodict as xml
 import json
 import os
-from dataCrawler import toNum
+from .dataCrawler import toNum
 
 url = "https://opendata.cwb.gov.tw/historyapi/v1/getMetadata/O-A0059-001?Authorization=CWB-41DC9AED-4979-4F29-8CB7-E6BF577E5036&limit=10&offset=1431"
 
