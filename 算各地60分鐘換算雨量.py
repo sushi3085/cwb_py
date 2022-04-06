@@ -2,7 +2,7 @@ import os
 import numpy
 import json
 
-from .曼寧等公式 import *
+from 曼寧等公式 import *
 
 
 class RainCalculator:
@@ -108,11 +108,12 @@ class RainCalculator:
                     self.__update_rain_都飛魯溫泉()  # no WDD
                     self.__update_rain_比魯溫泉()  # no WDD
                     self.__update_rain_普沙羽揚溫泉()  # no WDD
+                    #
 
     def check(self):
         # TODO : implement check and add into alert file
         # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
-        with open('Code/alert/alert', 'w') as f:
+        with open('alert', 'w') as f:
             for i in range(len(self.depth)):
                 q = Q_CIA(self.location_rain[i], 100) # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])

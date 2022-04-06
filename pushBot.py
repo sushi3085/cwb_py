@@ -34,7 +34,7 @@ if __name__ == "__main__":
     "how are you" 代表的是Line Bot 會收到什麼字串
     """
 
-    Webhook_URL = "https://cwb-python.herokuapp.com/push/"  # 請先修改你的Webhook URL，否則你無法發送請求
+    Webhook_URL = "https://24f7-118-163-203-105.ngrok.io/push"  # 請先修改你的Webhook URL，否則你無法發送請求
 
     try:
         push_str = sys.argv[1]  # 這串代表的是 它會取得 你執行檔案後面 下一個字串

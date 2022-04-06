@@ -15,8 +15,10 @@ import threading
 
 # ======self written==========
 from 最近60分雷達回波抓XML import CrawlSixty
+from 算各地60分鐘換算雨量 import RainCalculator
 
 # ======self written==========
+
 
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
@@ -37,6 +39,7 @@ def push_message(push_text_str):
 
 @app.route("/debug")
 def debug():
+    return "E)$"
     startpath = os.getcwd()
     for root, dirs, files in os.walk(startpath):
         level = root.replace(startpath, '').count(os.sep)
@@ -71,15 +74,24 @@ def callback():
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    profile = None
-    try:
-        profile = line_bot_api.get_profile('<user_id>')
-    except Exception as e:
-        pass
-    if profile == None: return
-    UIDS.add(profile)
+    # profile = None
+    # try:
+    #     profile = line_bot_api.get_profile('<user_id>')
+    # except Exception as e:
+    #     pass
+    # if profile == None: return
+    # UIDS.add(profile)
     msg = event.message.text
-    line_bot_api.push_message(profile, TextSendMessage(text=str(UIDS)))
+    if msg == '我剛剛說什麼':
+        uid = event.source.sender_id
+        if uid in UIDS.keys():
+            line_bot_api.reply_message(event.reply_token, UIDS[uid])
+            return
+    print(event.source.sender_id)
+    UIDS[event.source.sender_id] = event.message
+
+    print(UIDS)
+    # line_bot_api.push_message(profile, TextSendMessage(text=str(UIDS)))
 
     if '最新合作廠商' in msg:
         message = imagemap_message()
@@ -107,7 +119,7 @@ def handle_message(event):
 @handler.add(MemberJoinedEvent)
 def welcome(event):
     uid = event.joined.members[0].user_id
-    UIDS.add(uid)
+    # UIDS.add(uid)
     gid = event.source.group_id
     profile = line_bot_api.get_group_member_profile(gid, uid)
     name = profile.display_name
@@ -115,18 +127,19 @@ def welcome(event):
     line_bot_api.reply_message(event.reply_token, message)
 
 
-UIDS = set()
+# UIDS = set()
+UIDS = {}
 
 
 def process():
     while True:
         crl60 = CrawlSixty()
         crl60.main()
-
-        # rcal = RainCalculator()
-        # rcal.update()
-        # rcal.check()
         print("================ DONE crawling file====================")
+
+        rcal = RainCalculator()
+        rcal.update()
+        rcal.check()
         time.sleep(8 * 60)
 
 
