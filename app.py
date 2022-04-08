@@ -172,11 +172,8 @@ def process():
 
 # import os
 if __name__ == "__main__":
+    print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
+    print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
-    threading.Thread(target=process).start()
-    print(os.getcwd())
-    for a, b, c in os.walk(os.getcwd()):
-        print(a)
-        print(b)
-        print(c)
+    # threading.Thread(target=process).start()
     app.run(host='0.0.0.0', port=port)
