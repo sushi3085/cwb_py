@@ -6,7 +6,7 @@ import os
 from dataCrawler import toNum
 
 url = "https://opendata.cwb.gov.tw/historyapi/v1/getMetadata/O-A0059-001?Authorization=CWB-41DC9AED-4979-4F29-8CB7-E6BF577E5036&limit=10&offset=1431"
-
+url_3hr = "https://opendata.cwb.gov.tw/historyapi/v1/getMetadata/O-A0059-001?Authorization=CWB-41DC9AED-4979-4F29-8CB7-E6BF577E5036&limit=20&offset=1419"
 
 class CrawlSixty:
     @staticmethod
@@ -46,13 +46,53 @@ class CrawlSixty:
         # delete expired file
         for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data').replace('\\','/')):
             for filename in filenames:
+                print('ckecking weather expired file')
                 if filename not in time_url_map.keys():
+                    print('found expired')
                     os.remove(os.path.join(dirname, filename))
 
         # write data in to file
         for k, v in time_url_map.items():
             for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data').replace('\\','/')):
                 print('inside...'+dirname)
+                if k not in filenames:
+                    response = s.get(v)
+                    datas = xml.parse(response.text)
+                    data = datas['cwbopendata']['dataset']['contents']['content'].split(',')
+                    data = list(map(toNum, data))
+                    data = numpy.reshape(data, (881, 921))
+                    # data = convolution(data)
+                    with open(dirname + '/' + k, 'w') as f:
+                        f.write('[')
+                        for i, raw in enumerate(data):
+                            f.write(json.dumps(list(raw)))
+                            if i != 880:
+                                f.write(',')
+                        f.write(']')
+
+    def crawl_3hr(self):
+        s = requests.Session()
+        response = s.get(url_3hr)
+        obj = json.loads(response.text)
+        data_list = obj['dataset']['resources']['resource']['data']['time']
+        time_url_map = {}
+        # build time-url map
+        data_list = data_list[-18:]
+        for i in data_list:
+            time_url_map[self.wrapper(i['dataTime'])] = i['url']
+
+        # delete expired file
+        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '3hr_data').replace('\\', '/')):
+            for filename in filenames:
+                print('ckecking weather expired 3hr file')
+                if filename not in time_url_map.keys():
+                    print('found expired')
+                    os.remove(os.path.join(dirname, filename))
+
+        # write data in to file
+        for k, v in time_url_map.items():
+            for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '3hr_data').replace('\\', '/')):
+                print('inside...' + dirname)
                 if k not in filenames:
                     response = s.get(v)
                     datas = xml.parse(response.text)

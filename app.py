@@ -11,6 +11,8 @@ from Function import *
 import os
 import time
 import threading
+import requests
+import datetime
 # ======python的函數庫==========
 
 # ======self written==========
@@ -82,38 +84,46 @@ def handle_message(event):
     # if profile == None: return
     # UIDS.add(profile)
     msg = event.message.text
-    if msg == '我剛剛說什麼':
-        uid = event.source.sender_id
-        if uid in UIDS.keys():
-            line_bot_api.reply_message(event.reply_token, UIDS[uid])
-            return
-    print(event.source.sender_id)
-    UIDS[event.source.sender_id] = event.message
+    if msg == '接收':
+        UIDS.add(event.source.sender_id)
+        return 'OK'
+    elif msg == '取消':
+        UIDS.remove(event.source.sender_id)
+        return 'OK'
+    else:
+        with open(os.path.join(os.getcwd(), '60min_data', 'testfile'), 'r') as f:
+            msg += f.readline()
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=msg+"\n"+"我就學..."))
 
-    print(UIDS)
+    # UIDS[event.source.sender_id] = event.message
+    # if msg == 'sc':
+    #     uid = event.source.sender_id
+    #     if uid in UIDS:
+    #         line_bot_api.reply_message(event.reply_token, UIDS[uid])
+    #         return
     # line_bot_api.push_message(profile, TextSendMessage(text=str(UIDS)))
 
-    if '最新合作廠商' in msg:
-        message = imagemap_message()
-        line_bot_api.reply_message(event.reply_token, message)
-    elif '最新活動訊息' in msg:
-        message = buttons_message()
-        line_bot_api.reply_message(event.reply_token, message)
-    elif '註冊會員' in msg:
-        message = Confirm_Template()
-        line_bot_api.reply_message(event.reply_token, message)
-    elif '旋轉木馬' in msg:
-        message = Carousel_Template()
-        line_bot_api.reply_message(event.reply_token, message)
-    elif '圖片畫廊' in msg:
-        message = test()
-        line_bot_api.reply_message(event.reply_token, message)
-    elif '功能列表' in msg:
-        message = function_list()
-        line_bot_api.reply_message(event.reply_token, message)
-    else:
-        message = TextSendMessage(text=msg)
-        line_bot_api.reply_message(event.reply_token, message)
+    # if '最新合作廠商' in msg:
+    #     message = imagemap_message()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # elif '最新活動訊息' in msg:
+    #     message = buttons_message()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # elif '註冊會員' in msg:
+    #     message = Confirm_Template()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # elif '旋轉木馬' in msg:
+    #     message = Carousel_Template()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # elif '圖片畫廊' in msg:
+    #     message = test()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # elif '功能列表' in msg:
+    #     message = function_list()
+    #     line_bot_api.reply_message(event.reply_token, message)
+    # else:
+    #     message = TextSendMessage(text=msg)
+    #     line_bot_api.reply_message(event.reply_token, message)
 
 
 @handler.add(MemberJoinedEvent)
@@ -127,19 +137,38 @@ def welcome(event):
     line_bot_api.reply_message(event.reply_token, message)
 
 
-# UIDS = set()
-UIDS = {}
+UIDS = set()
 
 
 def process():
+    s = requests.Session()
+    river_name = {
+        "0": "大豹溪","1": "泰岡野溪溫泉","2": "秀巒野溪溫泉","3": "琉璃灣露營區","4": "邦腹溪營地",
+        "5": "武界露營","6": "二山子野溪溫泉","7": "桶後溪營地","8": "八煙野溪溫泉","9": "天狗溪溫泉",
+        "10": "馬陵溫泉","11": "精英野溪溫泉","12": "栗松溫泉","13": "流霞谷親水烤肉園區","14": "八度野溪溫泉區",
+        "15": "梅淮露營區","16": "五六露營農場","17": "祕密基地露營區","18": "瑞岩溫泉野溪邊露營","19": "金崙溫泉野溪露營區",
+        "20": "嘎拉賀溫泉","21": "四稜溫泉","22": "神駒谷溫泉","23": "太魯灣溪溫泉","24": "瑞岩溫泉",
+        "25": "紅香溫泉","26": "萬大南溪溫泉","27": "樂樂谷溫泉","28": "玉穗溫泉","29": "荖荖溫泉",
+        "30": "五區_拉卡_溫泉","31": "文山溫泉",
+    }
     while True:
         crl60 = CrawlSixty()
         crl60.main()
+        crl60.crawl_3hr()
         print("================ DONE crawling file====================")
 
         rcal = RainCalculator()
-        rcal.update()
+        rcal.update(60)
+        rcal.update(180)
         rcal.check()
+        print(datetime.datetime.now())
+
+        result = ""
+        with open('alert', 'r') as f:
+            for line in f.readlines():
+                result += river_name[line]+"警戒囉！\n"
+        s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
+
         time.sleep(8 * 60)
 
 

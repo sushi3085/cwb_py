@@ -9,6 +9,7 @@ class RainCalculator:
     def __init__(self):
         self.radar_data = None
         self.location_rain = [0] * 40
+        self.location_rain_3hr = [0]*40
         self.slope = numpy.concatenate((
             numpy.array(
                 [5, 5, 5, 6, 8, 6, 7, 5, 2, 5, 7, 8, 8, 7, 5, 5, 5, 5, 8, 6]  # 最後一筆當作是6，沒資料
@@ -59,9 +60,14 @@ class RainCalculator:
         return (a**(-1/b)) * (10**(dBZ/(10**b)))
         # return (Z / a) ** (1 / b)
 
-    def update(self):
-        self.location_rain = [0] * 40
-        for dirname, _, filenames in os.walk('Code/60min_data'):
+    def update(self, min):
+        if min == 60:
+            self.location_rain = [0] * 40
+            dname = '60min_data'
+        else:
+            self.location_rain_3hr = [0]*40
+            dname = '3hr_data'
+        for dirname, _, filenames in os.walk(dname):
             for filename in filenames:
                 with open(os.path.join(dirname, filename)) as f:
                     self.radar_data = numpy.array(json.loads(f.readline()))
