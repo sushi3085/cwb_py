@@ -44,7 +44,7 @@ class CrawlSixty:
             time_url_map[self.wrapper(i['dataTime'])] = i['url']
 
         # delete expired file
-        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data').replace('\\','/')):
+        for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), '60min_data')):
             for filename in filenames:
                 print('ckecking weather expired file')
                 if filename not in time_url_map.keys():
