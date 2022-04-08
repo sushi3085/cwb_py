@@ -173,7 +173,10 @@ def process():
 # import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
-    print('starting')
     threading.Thread(target=process).start()
-    print("finished")
+    print(os.getcwd())
+    for a, b, c in os.walk(os.getcwd()):
+        print(a)
+        print(b)
+        print(c)
     app.run(host='0.0.0.0', port=port)
