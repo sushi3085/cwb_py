@@ -189,10 +189,6 @@ if __name__ == "__main__":
     print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
     thread = threading.Thread(target=process)
-    thread.start()
-    thread.join()
     thread2 = threading.Thread(target=wake)
-    thread2.start()
-    thread2.join()
 
     app.run(host='0.0.0.0', port=port)
