@@ -167,7 +167,7 @@ def process():
         result = ""
         with open('alert', 'r') as f:
             for line in f.readlines():
-                result += river_name[line]+"警戒囉！\n"
+                result += river_name[line.replace('\n', '')]+"警戒囉！\n"
         s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
         print("====== DONE PUSHING MESSAGE ======")
 
