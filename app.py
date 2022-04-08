@@ -164,7 +164,7 @@ def process():
         rcal.check()
         print("====== DONE CHECKING WATER LEVEL ======")
 
-        time.sleep(30)
+        time.sleep(5)
         result = ""
         with open('alert', 'r') as f:
             for line in f.readlines():
