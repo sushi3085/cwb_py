@@ -170,7 +170,7 @@ def process():
                 splits = line.replace('\n','').split(' ')
                 result += river_name[splits[0]]+"警戒囉！\n"
                 result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
-        s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
+        s.get('https://cwb-python.herokuapp.com//push/'+result)
         print("====== DONE PUSHING MESSAGE ======")
 
         time.sleep(8 * 60*0.1)
