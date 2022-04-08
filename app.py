@@ -164,10 +164,13 @@ def process():
         rcal.check()
         print("====== DONE CHECKING WATER LEVEL ======")
 
+        time.sleep(30)
         result = ""
         with open('alert', 'r') as f:
             for line in f.readlines():
-                result += river_name[line.replace('\n', '')]+"警戒囉！\n"
+                splits = line.replace('\n','').split(' ')
+                result += river_name[splits[0]]+"警戒囉！\n"
+                result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
         s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
         print("====== DONE PUSHING MESSAGE ======")
 

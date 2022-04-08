@@ -126,7 +126,7 @@ class RainCalculator:
                 h = H(q, v, self.width[i])
                 print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "meters")
                 if h >= 50*0.8:# 50cm
-                    f.write(f"{i}\n")
+                    f.write(f"{i} {round(self.distance[i]*1000/v/60,2)}\n")
         return
 
     def print_location_rain(self):
