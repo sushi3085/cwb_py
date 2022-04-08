@@ -91,7 +91,7 @@ def handle_message(event):
         UIDS.remove(event.source.sender_id)
         return 'OK'
     else:
-        with open(os.path.join(os.getcwd(), '60min_data', 'testfile').replace('\\','/'), 'r') as f:
+        with open('testfile', 'r') as f:
             msg += f.readline()
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=msg+"\n"+"我就學..."))
 
