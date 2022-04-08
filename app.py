@@ -158,9 +158,6 @@ def process():
         rcal = RainCalculator()
         rcal.update(60)
         rcal.update(180)
-        for i in range(len(rcal.location_rain)):
-            rcal.location_rain[i] = 62
-        rcal.location_rain[17] = 80
         rcal.check()
         print("====== DONE CHECKING WATER LEVEL ======")
 
