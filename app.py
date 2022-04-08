@@ -164,7 +164,6 @@ def process():
         rcal.check()
         print("====== DONE CHECKING WATER LEVEL ======")
 
-        time.sleep(5)
         result = ""
         with open('alert', 'r') as f:
             for line in f.readlines():
@@ -174,7 +173,7 @@ def process():
         s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
         print("====== DONE PUSHING MESSAGE ======")
 
-        time.sleep(8 * 60)
+        time.sleep(8 * 60*0.1)
 
 
 def wake():
