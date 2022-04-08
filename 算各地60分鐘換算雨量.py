@@ -125,7 +125,7 @@ class RainCalculator:
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
                 print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "meters")
-                if h >= 40:
+                if h >= 50*0.8:# 50cm
                     f.write(f"{i}\n")
         return
 
@@ -685,7 +685,7 @@ class RainCalculator:
 
 if __name__ == '__main__':
     rain_calculator = RainCalculator()
-    rain_calculator.update()
+    rain_calculator.update(60)
     # print(len(rain_calculator.area_ha))
     # print(len(rain_calculator.width), len(rain_calculator.depth), len(rain_calculator.slope))
     rain_calculator.location_rain[17] = 140

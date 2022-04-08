@@ -158,22 +158,38 @@ def process():
         rcal = RainCalculator()
         rcal.update(60)
         rcal.update(180)
+        for i in range(len(rcal.location_rain)):
+            rcal.location_rain[i] = 62
+        rcal.location_rain[17] = 80
         rcal.check()
-        print(datetime.datetime.now())
+        print("====== DONE CHECKING WATER LEVEL ======")
 
         result = ""
         with open('alert', 'r') as f:
             for line in f.readlines():
                 result += river_name[line]+"警戒囉！\n"
         s.get('https://03d0-61-221-225-123.ngrok.io/push/'+result)
+        print("====== DONE PUSHING MESSAGE ======")
 
         time.sleep(8 * 60)
 
+
+def wake():
+    while True:
+        s = requests.Session()
+        s.get('https://cwb-python.herokuapp.com/')
+        time.sleep(28*60)
 
 # import os
 if __name__ == "__main__":
     print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
     print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
-    threading.Thread(target=process).start()
+    thread = threading.Thread(target=process)
+    thread.start()
+    thread.join()
+    thread2 = threading.Thread(target=wake)
+    thread2.start()
+    thread2.join()
+
     app.run(host='0.0.0.0', port=port)
