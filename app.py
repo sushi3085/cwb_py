@@ -1,5 +1,5 @@
 # from crypt import methods
-from flask import Flask, request, abort, jsonify
+from flask import Flask, request, abort, jsonify, render_template
 
 # ======這裡是呼叫的檔案內容=====
 from message import *
@@ -18,7 +18,7 @@ import datetime
 # ======self written==========
 from 最近60分雷達回波抓XML import CrawlSixty
 from 算各地60分鐘換算雨量 import RainCalculator
-
+from 抓預報 import Forcaster
 # ======self written==========
 
 
@@ -39,22 +39,19 @@ def push_message(push_text_str):
     return push_text_str
 
 
-@app.route("/debug")
-def debug():
-    return "E)$"
-    startpath = os.getcwd()
-    for root, dirs, files in os.walk(startpath):
-        level = root.replace(startpath, '').count(os.sep)
-        indent = ' ' * 4 * (level)
-        print('{}{}/'.format(indent, os.path.basename(root)))
-        subindent = ' ' * 4 * (level + 1)
-        for f in files:
-            print('{}{}'.format(subindent, f))
-    for dirname, _, filenames in os.walk(os.path.join(os.getcwd(), "60min_data\\")):
-        with open(os.path.join(dirname, filenames[0]), 'r') as f:
-            data = f.readline()
-            print(data[:500])
-    return jsonify(data)
+
+
+
+# ! deposited
+@app.route("/web", methods=['GET'])
+def web():
+    index = int(request.args['id'])
+    locationName = ['大豹溪','asd','aaaaaaaaaaaa'][index]
+    return render_template('index.html', userid=request.args['id'], locationName=locationName)#, id=userid)
+
+
+
+
 
 
 # 監聽所有來自 /callback 的 Post Request
@@ -73,6 +70,8 @@ def callback():
     return 'OK'
 
 
+
+fster = Forcaster()
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -86,10 +85,15 @@ def handle_message(event):
     msg = event.message.text
     if msg == '接收':
         UIDS.add(event.source.sender_id)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="訂閱成功，若要取消請回覆「取消」"))
         return 'OK'
     elif msg == '取消':
         UIDS.remove(event.source.sender_id)
         return 'OK'
+    elif msg== '看預報':
+        for position in fster.table.keys():
+            fster.get(position)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=fster.get_weather_msg()))
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=msg+"\n"+"我就學..."))
 
@@ -184,9 +188,9 @@ if __name__ == "__main__":
     print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
     print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
-    thread = threading.Thread(target=process)
-    thread.start()
-    thread2 = threading.Thread(target=wake)
-    thread2.start()
+    # thread = threading.Thread(target=process)
+    # thread.start()
+    # thread2 = threading.Thread(target=wake)
+    # thread2.start()
 
     app.run(host='0.0.0.0', port=port)

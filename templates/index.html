@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="css.css">
+	<style>
+		body {
+	margin: 0;
+	height: 87.5vh;
+	background-color: #d1d1d1;
+}
+
+.frame {
+	margin: auto;
+	margin-top: 10vh;
+	width: 1200px;
+	height: 700px;
+	border: 2px black solid;
+	border-radius: 30px;
+	flex-direction: row;
+}
+
+.left-part {
+	flex-direction: column;
+	float: left;
+	width: 55%;
+	height: 100%;
+}
+
+.top-left-information {
+	width: 100%;
+	height: 45%;
+	background-color: rgb(191, 191, 255);
+	border-radius: 30px 0 0 0;
+	flex-direction: row;
+}
+
+.alert{
+	background-color: yellowgreen;
+	height: calc(10% - 4px);
+	border: blue solid 2px;
+	text-align: center;
+}
+
+.bottom-left-information {
+	width: 100%;
+	height: 45%;
+	background-color: rgb(255, 203, 203);
+	border-radius: 0 0 0 30px;
+}
+
+.map {
+	float: right;
+	width: 45%;
+	height: 100%;
+	margin: 0px;
+	background: url('templates/redcamp.png');
+	/* background-repeat: no-repeat; */
+	background-size: contain;
+	border-radius: 0 30px 30px 0;
+}
+
+.TL-information{
+	margin: auto;
+	text-align: center;
+	align-items: center;
+}
+
+
+/*  */
+
+div>span{
+	font-size: 48px;
+}
+
+/*  */
+
+#降雨機率{
+	background: rgb(255, 162, 247);
+	width: 50%;
+	height: 100%;
+	border-radius: 0 0 0 30px;
+	float: left;
+	text-align: center;
+	align-items: center;
+}
+#七天氣溫{
+	width: 50%;
+	height: 100%;
+	float: right;
+}
+
+.temperature{
+	width:calc(100%-4px);
+	height:calc(100% / 8 - 4px);
+	border: purple solid 2px;
+}
+
+.date{
+	font-size: 24px;
+}
+	</style>
+	<script src="main.js"></script>
+	<title>水來了塊桃</title>
+</head>
+<body>
+	<div class="frame">
+		<div class="left-part">
+			<div class="top-left-information">
+				<div class="TL-information" style="height:20%;font-size: 36px;">地點名稱</div>
+				<div class="TL-information" style="height:40%;">上游天氣：<br><span>未知</span></div>
+				<div class="TL-information" style="height:40%;">剩餘時間：<br><span>----</span></div>
+			</div>
+			<div class="alert"><span>有沒有警戒阿？</span></div>
+			<div class="bottom-left-information">
+				<div id="降雨機率">
+					<span>降雨機率：</span><br><br><br><br><br>
+					<span id="rain-prob">??</span><span>%</span>
+				</div>
+				<div id="七天氣溫">
+					<div class="temperature" style="text-align: center; font-size: 26px; font-weight: bold;">氣溫</div>
+					<div class="temperature"><span style="font-size: 24px;">今天：</span><span style="font-size: 24px;"id="Tday0">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">明天：</span><span style="font-size: 24px;"id="Tday1">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">後天：</span><span style="font-size: 24px;"id="Tday2">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">大後天：</span><span style="font-size: 24px;"id="Tday3">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">四天後：</span><span style="font-size: 24px;"id="Tday4">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">五天後：</span><span style="font-size: 24px;"id="Tday5">??</span><span style="font-size: 24px;">°C</span></div>
+					<div class="temperature"><span style="font-size: 24px;">六天後：</span><span style="font-size: 24px;"id="Tday6">??</span><span style="font-size: 24px;">°C</span></div>
+				</div>
+			</div>
+		</div>
+		<div class="map"></div>
+	</div>
+</body>
+</html>
