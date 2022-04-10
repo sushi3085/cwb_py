@@ -89,11 +89,19 @@ def handle_message(event):
         return 'OK'
     elif msg == '取消':
         UIDS.remove(event.source.sender_id)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="取消成功，若要回復訂閱請回覆「訂閱」"))
         return 'OK'
     elif msg== '看預報':
         for position in fster.table.keys():
             fster.get(position)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=fster.get_weather_msg()))
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='''所有指令：
+「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛將會通知
+「取消」-> 取消接收狀態，若有洪汛將 不會 通知
+「看預報」-> 可以查看各地點未來6小時以下氣象資訊：
+        1. 天氣狀況文字描述( 晴時多雲 )
+        2. 降雨機率
+        3. 氣溫
+        4. 對環境的感受'''))
     else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=msg+"\n"+"我就學..."))
 
@@ -135,7 +143,7 @@ def welcome(event):
     gid = event.source.group_id
     profile = line_bot_api.get_group_member_profile(gid, uid)
     name = profile.display_name
-    message = TextSendMessage(text=f'{name}歡迎加入')
+    message = TextSendMessage(text=get_welcome_msg())
     line_bot_api.reply_message(event.reply_token, message)
 
 
@@ -182,6 +190,36 @@ def wake():
         s = requests.Session()
         s.get('https://cwb-python.herokuapp.com/')
         time.sleep(28*60)
+
+def get_welcome_msg():
+    return'''嗨~ 這裡是「水來了，快逃！」
+您可以藉由傳送指令來獲取對應的資訊。
+目前支援的地點如下：
+大豹溪蟾蜍山谷 泰岡野溪溫泉 秀巒野溪溫泉
+琉璃灣露營區 邦腹溪營地 武界露營
+二山子野溪溫泉 桶後溪營地
+八煙野溪溫泉 天狗溪溫泉 馬陵溫泉
+精英野溪溫泉 栗松溫泉 梅淮露營區
+流霞谷親水烤肉園區 五六露營農場
+八度野溪溫泉區 祕密基地露營區
+瑞岩溫泉野溪邊露營 四稜溫泉
+金崙溫泉野溪露營區 嘎拉賀溫泉
+神駒谷溫泉 太魯灣溪溫泉 瑞岩溫泉
+紅香溫泉 萬大南溪溫泉 樂樂谷溫泉
+玉穗溫泉 荖荖溫泉 五區_拉卡_溫泉
+文山溫泉
+===== ===== =====
+所有指令：
+「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛將會通知
+「取消」-> 取消接收狀態，若有洪汛將 不會 通知
+「看預報」-> 可以查看各地點未來6小時以下氣象資訊：
+        1. 天氣狀況文字描述( 晴時多雲 )
+        2. 降雨機率
+        3. 氣溫
+        4. 對環境的感受
+
+現在就試試下指令吧！
+'''
 
 # import os
 if __name__ == "__main__":
