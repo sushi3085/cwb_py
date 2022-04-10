@@ -94,6 +94,8 @@ def handle_message(event):
     elif msg== '看預報':
         for position in fster.table.keys():
             fster.get(position)
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=fster.get_weather_msg()))
+    else:
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text='''所有指令：
 「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛將會通知
 「取消」-> 取消接收狀態，若有洪汛將 不會 通知
@@ -102,8 +104,6 @@ def handle_message(event):
         2. 降雨機率
         3. 氣溫
         4. 對環境的感受'''))
-    else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=msg+"\n"+"我就學..."))
 
     # UIDS[event.source.sender_id] = event.message
     # if msg == 'sc':
