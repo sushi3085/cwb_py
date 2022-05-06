@@ -8,10 +8,12 @@ def Q_CIA(I, A):
 
 
 def manning_velocity(width, depth, S, n_manning_coefficient=0.07) -> float:
+    """
     # return speed of water
+    """
     # R => 水力半徑 = 截面積/濕周 = ab/(2a+b)
     R = width * depth / (2 * depth + width)
-    # S => slope, in 'not angle' format
+    # S => slope, in 'ratio' format
     return (R ** (2 / 3)) * (S ** 0.5) / n_manning_coefficient
 
 

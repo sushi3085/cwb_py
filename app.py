@@ -2,9 +2,9 @@
 from flask import Flask, request, abort, jsonify, render_template
 
 # ======這裡是呼叫的檔案內容=====
-from message import *
-from new import *
-from Function import *
+# from message import *
+# from new import *
+# from Function import *
 # ======這裡是呼叫的檔案內容=====
 
 # ======python的函數庫==========
@@ -13,6 +13,10 @@ import time
 import threading
 import requests
 import datetime
+
+from linebot import (LineBotApi, WebhookHandler)
+from linebot.exceptions import (InvalidSignatureError)
+from linebot.models import *
 # ======python的函數庫==========
 
 # ======self written==========
@@ -31,27 +35,32 @@ line_bot_api = LineBotApi(
 handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 
-@app.route("/push/<string:push_text_str>")
-def push_message(push_text_str):
-    print(push_text_str)
-    for uid in UIDS:
-        line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
-    return push_text_str
+# @app.route("/push/<string:push_text_str>")
+# def push_message(push_text_str):
+#     print(push_text_str)
+#     for uid in UIDS:
+#         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
+#     return push_text_str
 
 
 
 
 
-locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
-# ! deposited
-@app.route("/web", methods=['GET'])
-def web():
-    ID = int(request.args['place'])
-    locationName = locationNames[ID]
-
-    # prepare data and send into the view
-
-    return render_template('index.html', userid=request.args['id'], locationName=locationName)#, id=userid)
+# locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
+# # ! deposited
+# @app.route("/web", methods=['GET'])
+# def web():
+#     ID = int(request.args['place'])
+#     print(ID)
+#     locationName = locationNames[ID]
+#
+#     # prepare data and send into the view
+#     ss = requests.Session()
+#     if ID==0:#大豹溪
+#
+#         return None
+#
+#     return render_template('index.html', userid=ID, locationName=locationName)#, id=userid)
 
 
 
@@ -183,17 +192,20 @@ def process():
                 splits = line.replace('\n','').split(' ')
                 result += river_name[splits[0]]+"警戒囉！\n"
                 result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
-        s.get('https://cwb-python.herokuapp.com//push/'+result)
+        # s.get('https://cwb-python.herokuapp.com/push/'+result)
+        for uid in UIDS:
+            line_bot_api.push_message(uid, TextSendMessage(text=result))
         print("====== DONE PUSHING MESSAGE ======")
 
-        time.sleep(8 * 60*0.1)
+        time.sleep(8 * 60)
 
 
 def wake():
     while True:
         s = requests.Session()
-        s.get('https://cwb-python.herokuapp.com/')
-        time.sleep(28*60)
+        s.get('https://avoid-coming-water.herokuapp.com/')
+        print('== == WAKING UP == ==')
+        time.sleep(20*60)
 
 
 def get_welcome_msg():
@@ -228,8 +240,8 @@ def get_welcome_msg():
 
 # import os
 if __name__ == "__main__":
-    print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
-    print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
+    # print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
+    # print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
     thread = threading.Thread(target=process)
     thread.start()
