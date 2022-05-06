@@ -42,11 +42,15 @@ def push_message(push_text_str):
 
 
 
+locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
 # ! deposited
 @app.route("/web", methods=['GET'])
 def web():
-    index = int(request.args['id'])
-    locationName = ['大豹溪','asd','aaaaaaaaaaaa'][index]
+    ID = int(request.args['place'])
+    locationName = locationNames[ID]
+
+    # prepare data and send into the view
+
     return render_template('index.html', userid=request.args['id'], locationName=locationName)#, id=userid)
 
 
@@ -190,6 +194,7 @@ def wake():
         s = requests.Session()
         s.get('https://cwb-python.herokuapp.com/')
         time.sleep(28*60)
+
 
 def get_welcome_msg():
     return'''嗨~ 這裡是「水來了，快逃！」
