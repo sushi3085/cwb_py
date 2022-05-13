@@ -1,4 +1,4 @@
-import os
+﻿import os
 import numpy
 import json
 
@@ -124,7 +124,7 @@ class RainCalculator:
                 q = Q_CIA(self.location_rain[i], 100) # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
-                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "meters")
+                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")#meters
                 if h >= 50*0.8:# 50cm
                     f.write(f"{i} {round(self.distance[i]*1000/v/60,2)}\n")
         return
