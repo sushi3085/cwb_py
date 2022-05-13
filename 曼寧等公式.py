@@ -1,4 +1,4 @@
-def Q_CIA(I, A):
+﻿def Q_CIA(I, A):
     """
     we assert that C to be 1.
 
@@ -9,7 +9,7 @@ def Q_CIA(I, A):
 
 def manning_velocity(width, depth, S, n_manning_coefficient=0.07) -> float:
     """
-    # return speed of water
+    # return speed in 'm/s'
     """
     # R => 水力半徑 = 截面積/濕周 = ab/(2a+b)
     R = width * depth / (2 * depth + width)
