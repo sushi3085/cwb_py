@@ -182,7 +182,10 @@ def process():
 
         rcal = RainCalculator()
         rcal.update(60)
+        print("under is 60min check")
+        rcal.check()
         rcal.update(180)
+        print("under is 3hr check")
         rcal.check()
         print("====== DONE CHECKING WATER LEVEL ======")
 
@@ -197,7 +200,7 @@ def process():
             line_bot_api.push_message(uid, TextSendMessage(text=result))
         print("====== DONE PUSHING MESSAGE ======")
 
-        time.sleep(8 * 60)
+        time.sleep(3 * 60)
 
 
 def wake():
