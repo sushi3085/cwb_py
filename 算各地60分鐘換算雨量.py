@@ -9,7 +9,7 @@ class RainCalculator:
     def __init__(self):
         self.radar_data = None
         self.location_rain = [0] * 40
-        self.location_rain_3hr = [0]*40
+        self.location_rain_3hr = [0] * 40
         self.slope = numpy.concatenate((
             numpy.array(
                 [5, 5, 5, 6, 8, 6, 7, 5, 2, 5, 7, 8, 8, 7, 5, 5, 5, 5, 8, 6]  # 最後一筆當作是6，沒資料
@@ -44,7 +44,8 @@ class RainCalculator:
                             1.9, 1.1, 6.2, 7, 0.47, 1.35, 1.59, 2.34, 2.35, 0.52, 1.5, 2.22, 2.47
                         ]
 
-        self.area_ha = [100] * 39
+        self.area_pixel = [15, 20, 20, 24, 12, 18, 15, 36, 12, 20, 4, 12, 10, 9, 4, 20, 12, 9, 20, 36, 18, 28, 20, 20, 14, 49, 48, 30, 15, 16, 30, 4,
+                           4, 15, 54, 54, 36, 12, 6]
 
     def __dBZ_to_R(self, dBZ):
         # // Z = 300(R) ^ 1.4
@@ -57,7 +58,7 @@ class RainCalculator:
             return 0
         Z = 10 ** dBZ
         # let Z = Math.pow(10, dBZ / 10.0)
-        return (a**(-1/b)) * (10**(dBZ/(10**b)))
+        return (a ** (-1 / b)) * (10 ** (dBZ / (10 ** b)))
         # return (Z / a) ** (1 / b)
 
     def update(self, min):
@@ -65,7 +66,7 @@ class RainCalculator:
             self.location_rain = [0] * 40
             dname = '60min_data'
         else:
-            self.location_rain_3hr = [0]*40
+            self.location_rain_3hr = [0] * 40
             dname = '3hr_data'
         for dirname, _, filenames in os.walk(dname):
             for filename in filenames:
@@ -77,34 +78,34 @@ class RainCalculator:
                     self.__update_rain_泰崗野溪溫泉()
                     self.__update_rain_秀巒野溪溫泉()
                     self.__update_rain_琉璃灣露營區()
-                    self.__update_rain_邦腹溪營地()#4
+                    self.__update_rain_邦腹溪營地()  # 4
                     self.__update_rain_武界露營()
                     self.__update_rain_二山子野溪溫泉()
                     self.__update_rain_桶後溪營地()
                     self.__update_rain_八煙野溪溫泉()
-                    self.__update_rain_天狗溪溫泉()#9
+                    self.__update_rain_天狗溪溫泉()  # 9
                     self.__update_rain_馬陵溫泉()
                     self.__update_rain_精英野溪溫泉()
                     self.__update_rain_栗松溫泉()
                     self.__update_rain_流霞谷親水烤肉園區()
-                    self.__update_rain_八度野溪溫泉區()#14
+                    self.__update_rain_八度野溪溫泉區()  # 14
                     self.__update_rain_梅淮露營區()
                     self.__update_rain_五六露營農場()
                     self.__update_rain_祕密基地露營區()
                     self.__update_rain_瑞岩溫泉野溪邊露營()
-                    self.__update_rain_金崙溫泉野溪露營區()#19
+                    self.__update_rain_金崙溫泉野溪露營區()  # 19
                     # endregion
                     #
-                    self.__update_rain_嘎拉賀溫泉()#20
+                    self.__update_rain_嘎拉賀溫泉()  # 20
                     self.__update_rain_四稜溫泉()
                     self.__update_rain_神駒谷溫泉()
                     self.__update_rain_太魯灣溪溫泉()
-                    self.__update_rain_瑞岩溫泉()#24
+                    self.__update_rain_瑞岩溫泉()  # 24
                     self.__update_rain_紅香溫泉()
                     self.__update_rain_萬大南溪溫泉()
                     self.__update_rain_樂樂谷溫泉()
                     self.__update_rain_玉穗溫泉()
-                    self.__update_rain_荖荖溫泉()#29
+                    self.__update_rain_荖荖溫泉()  # 29
                     self.__update_rain_五區_拉卡_溫泉()
                     self.__update_rain_文山溫泉_有測站()
                     self.__update_rain_彩霞溫泉()
@@ -116,17 +117,17 @@ class RainCalculator:
                     self.__update_rain_普沙羽揚溫泉()  # no WDD
                     #
 
-    def check(self):
+    def check(self, hour):
         # TODO : implement check and add into alert file
         # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
         with open('alert', 'w') as f:
-            for i in range(len(self.depth)):
-                q = Q_CIA(self.location_rain[i], 100) # 100 ha
+            for i in range(len(self.depth)):# TODO fix I's unit, it should be divided by hours
+                q = Q_CIA(self.location_rain[i]/hour, self.area_pixel[i]*100)*0.8  # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
-                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")#meters
-                if h >= 50*0.8:# 50cm
-                    f.write(f"{i} {round(self.distance[i]*1000/v/60,2)}\n")
+                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")  # not meters
+                if h >= 50 * 0.8:  # 50cm
+                    f.write(f"{i} {round(self.distance[i] * 1000 / v / 60, 2)}\n")
         return
 
     def print_location_rain(self):
@@ -146,7 +147,7 @@ class RainCalculator:
                 # self.location_rain[0] += self.__dBZ_to_R(max(0, self.radar_data[y, x]))
                 dbZ += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbZ = dbZ / area
+        average_dbZ = dbZ / area / 1.25 / 1.25
         self.location_rain[0] += self.__dBZ_to_R(average_dbZ)
         return
 
@@ -160,7 +161,7 @@ class RainCalculator:
             for y in range(521, 525 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[1] += self.__dBZ_to_R(average_dbz)
         # self.location_rain[2] += self.__dBZ_to_R(average_dbz)
         return
@@ -181,7 +182,7 @@ class RainCalculator:
             for y in range(394, 397 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[3] += self.__dBZ_to_R(average_dbz)
 
     # 3*4
@@ -196,7 +197,7 @@ class RainCalculator:
             for y in range(401, 404 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[4] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -213,7 +214,7 @@ class RainCalculator:
             for y in range(476, 478 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[5] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -229,7 +230,7 @@ class RainCalculator:
             for y in range(473, 475 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[6] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -245,7 +246,7 @@ class RainCalculator:
             for y in range(545, 548 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[7] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -261,7 +262,7 @@ class RainCalculator:
             for y in range(574, 576 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[8] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -277,7 +278,7 @@ class RainCalculator:
             for y in range(520, 524 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[9] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -294,7 +295,7 @@ class RainCalculator:
             for y in range(497, 498 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[10] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -310,7 +311,7 @@ class RainCalculator:
             for y in range(481, 484 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        avg_dbz = dbz / area
+        avg_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[11] = self.__dBZ_to_R(avg_dbz)
 
     # 5*2
@@ -325,7 +326,7 @@ class RainCalculator:
             for y in range(415, 416 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-            avg_dbz = dbz / area
+            avg_dbz = dbz / area / 1.25 / 1.25
             self.location_rain[12] = self.__dBZ_to_R(avg_dbz)
 
     # 3*3
@@ -340,7 +341,7 @@ class RainCalculator:
             for y in range(544, 546 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[13] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -356,7 +357,7 @@ class RainCalculator:
             for y in range(541, 542 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[14] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -373,7 +374,7 @@ class RainCalculator:
             for y in range(530, 533 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[15] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -389,7 +390,7 @@ class RainCalculator:
             for y in range(482, 485 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[16] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -405,7 +406,7 @@ class RainCalculator:
             for y in range(533, 535 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[17] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -421,7 +422,7 @@ class RainCalculator:
             for y in range(494, 498 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[18] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -437,7 +438,7 @@ class RainCalculator:
             for y in range(361, 364 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[19] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -458,7 +459,7 @@ class RainCalculator:
             for y in range(528, 530 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[20] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -470,7 +471,7 @@ class RainCalculator:
             for y in range(527, 533 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[21] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -482,7 +483,7 @@ class RainCalculator:
             for y in range(492, 503 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[22] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -494,7 +495,7 @@ class RainCalculator:
             for y in range(483, 484 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[23] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -506,7 +507,7 @@ class RainCalculator:
             for y in range(489, 490 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[24] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -519,7 +520,7 @@ class RainCalculator:
             for y in range(492, 498 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[25] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -531,7 +532,7 @@ class RainCalculator:
             for y in range(475, 478 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[26] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -543,7 +544,7 @@ class RainCalculator:
             for y in range(439, 443 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[27] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -555,7 +556,7 @@ class RainCalculator:
             for y in range(413, 415 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[28] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -567,7 +568,7 @@ class RainCalculator:
             for y in range(410, 413 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[29] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -580,7 +581,7 @@ class RainCalculator:
             for y in range(518, 523 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[30] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -592,7 +593,7 @@ class RainCalculator:
             for y in range(493, 494 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[31] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -604,7 +605,7 @@ class RainCalculator:
             for y in range(411, 412 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[32] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -616,7 +617,7 @@ class RainCalculator:
             for y in range(415, 417 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[33] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -628,7 +629,7 @@ class RainCalculator:
             for y in range(403, 411 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[34] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -641,7 +642,7 @@ class RainCalculator:
             for y in range(403, 411 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[35] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -653,7 +654,7 @@ class RainCalculator:
             for y in range(361, 364 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[36] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -665,7 +666,7 @@ class RainCalculator:
             for y in range(368, 371 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[37] += self.__dBZ_to_R(average_dbz)
         return
 
@@ -677,7 +678,7 @@ class RainCalculator:
             for y in range(348, 349 + 1):
                 dbz += max(0, self.radar_data[y, x])
                 area += 1
-        average_dbz = dbz / area
+        average_dbz = dbz / area / 1.25 / 1.25
         self.location_rain[38] += self.__dBZ_to_R(average_dbz)
         return
     # endregion

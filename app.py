@@ -20,6 +20,8 @@ from linebot.models import *
 # ======python的函數庫==========
 
 # ======self written==========
+from typing import List
+
 from 最近60分雷達回波抓XML import CrawlSixty
 from 算各地60分鐘換算雨量 import RainCalculator
 from 抓預報 import Forcaster
@@ -183,10 +185,10 @@ def process():
         rcal = RainCalculator()
         rcal.update(60)
         print("under is 60min check")
-        rcal.check()
+        rcal.check(1)
         rcal.update(180)
         print("under is 3hr check")
-        rcal.check()
+        rcal.check(3)
         print("====== DONE CHECKING WATER LEVEL ======")
 
         result = ""
@@ -198,6 +200,7 @@ def process():
         # s.get('https://cwb-python.herokuapp.com/push/'+result)
         for uid in UIDS:
             line_bot_api.push_message(uid, TextSendMessage(text=result))
+        print(f"push\n{result}")
         print("====== DONE PUSHING MESSAGE ======")
 
         time.sleep(3 * 60)
@@ -241,14 +244,34 @@ def get_welcome_msg():
 現在就試試下指令吧！
 '''
 
+
+calc_thread: List[threading.Thread] = []
+
+
+def maintain():
+    while True:
+        if not calc_thread[0].is_alive():
+            with open('fail_running.txt', 'a') as f:
+                now = time.localtime()
+                f.write(f"process is dead at {now.tm_wday}, {now.tm_hour}hr, {now.tm_min}min, {now.tm_sec}sec\n")
+            calc_thread[0] = threading.Thread(target=process, name="process_rebuild")
+            calc_thread[0].start()
+            # raise RuntimeError('Not running with the Werkzeug Server')
+        time.sleep(1*60)
+
+
 # import os
 if __name__ == "__main__":
     # print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
     # print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
-    thread = threading.Thread(target=process)
+    thread = threading.Thread(target=process, name="process")
+    calc_thread.append(thread)
     thread.start()
-    thread2 = threading.Thread(target=wake)
+    thread2 = threading.Thread(target=wake, name="wake")
     thread2.start()
+
+    maintainThread = threading.Thread(target=maintain, name="maintain")
+    maintainThread.start()
 
     app.run(host='0.0.0.0', port=port)
