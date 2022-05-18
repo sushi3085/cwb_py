@@ -203,7 +203,7 @@ def process():
         print(f"push\n{result}")
         print("====== DONE PUSHING MESSAGE ======")
 
-        time.sleep(3 * 60)
+        time.sleep(8 * 60)
 
 
 def wake():
