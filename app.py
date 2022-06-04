@@ -48,21 +48,18 @@ handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 
 
-# locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
+locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
 # # ! deposited
-# @app.route("/web", methods=['GET'])
-# def web():
-#     ID = int(request.args['place'])
-#     print(ID)
-#     locationName = locationNames[ID]
-#
-#     # prepare data and send into the view
-#     ss = requests.Session()
-#     if ID==0:#大豹溪
-#
-#         return None
-#
-#     return render_template('index.html', userid=ID, locationName=locationName)#, id=userid)
+@app.route("/web", methods=['GET'])
+def web():
+    location = int(request.args['place'])
+    print(location)
+    locationName = locationNames[location]
+
+    # prepare data and send into the view
+    ss = requests.Session()
+
+    return render_template('index.html',  locationName=locationName)#, id=userid)
 
 
 
@@ -90,13 +87,6 @@ fster = Forcaster()
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    # profile = None
-    # try:
-    #     profile = line_bot_api.get_profile('<user_id>')
-    # except Exception as e:
-    #     pass
-    # if profile == None: return
-    # UIDS.add(profile)
     msg = event.message.text
     if msg == '接收':
         UIDS.add(event.source.sender_id)
@@ -120,36 +110,6 @@ def handle_message(event):
         3. 氣溫
         4. 對環境的感受'''))
 
-    # UIDS[event.source.sender_id] = event.message
-    # if msg == 'sc':
-    #     uid = event.source.sender_id
-    #     if uid in UIDS:
-    #         line_bot_api.reply_message(event.reply_token, UIDS[uid])
-    #         return
-    # line_bot_api.push_message(profile, TextSendMessage(text=str(UIDS)))
-
-    # if '最新合作廠商' in msg:
-    #     message = imagemap_message()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # elif '最新活動訊息' in msg:
-    #     message = buttons_message()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # elif '註冊會員' in msg:
-    #     message = Confirm_Template()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # elif '旋轉木馬' in msg:
-    #     message = Carousel_Template()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # elif '圖片畫廊' in msg:
-    #     message = test()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # elif '功能列表' in msg:
-    #     message = function_list()
-    #     line_bot_api.reply_message(event.reply_token, message)
-    # else:
-    #     message = TextSendMessage(text=msg)
-    #     line_bot_api.reply_message(event.reply_token, message)
-
 
 @handler.add(MemberJoinedEvent)
 def welcome(event):
@@ -165,17 +125,7 @@ def welcome(event):
 UIDS = set()
 
 
-def process():
-    s = requests.Session()
-    river_name = {
-        "0": "大豹溪","1": "泰岡野溪溫泉","2": "秀巒野溪溫泉","3": "琉璃灣露營區","4": "邦腹溪營地",
-        "5": "武界露營","6": "二山子野溪溫泉","7": "桶後溪營地","8": "八煙野溪溫泉","9": "天狗溪溫泉",
-        "10": "馬陵溫泉","11": "精英野溪溫泉","12": "栗松溫泉","13": "流霞谷親水烤肉園區","14": "八度野溪溫泉區",
-        "15": "梅淮露營區","16": "五六露營農場","17": "祕密基地露營區","18": "瑞岩溫泉野溪邊露營","19": "金崙溫泉野溪露營區",
-        "20": "嘎拉賀溫泉","21": "四稜溫泉","22": "神駒谷溫泉","23": "太魯灣溪溫泉","24": "瑞岩溫泉",
-        "25": "紅香溫泉","26": "萬大南溪溫泉","27": "樂樂谷溫泉","28": "玉穗溫泉","29": "荖荖溫泉",
-        "30": "五區_拉卡_溫泉","31": "文山溫泉",
-    }
+def crawl_data():
     while True:
         crl60 = CrawlSixty()
         crl60.main()
@@ -190,18 +140,6 @@ def process():
         print("under is 3hr check")
         rcal.check(3)
         print("====== DONE CHECKING WATER LEVEL ======")
-
-        result = ""
-        with open('alert', 'r') as f:
-            for line in f.readlines():
-                splits = line.replace('\n','').split(' ')
-                result += river_name[splits[0]]+"警戒囉！\n"
-                result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
-        # s.get('https://cwb-python.herokuapp.com/push/'+result)
-        for uid in UIDS:
-            line_bot_api.push_message(uid, TextSendMessage(text=result))
-        print(f"push\n{result}")
-        print("====== DONE PUSHING MESSAGE ======")
 
         time.sleep(8 * 60)
 
@@ -254,24 +192,70 @@ def maintain():
             with open('fail_running.txt', 'a') as f:
                 now = time.localtime()
                 f.write(f"process is dead at {now.tm_wday}, {now.tm_hour}hr, {now.tm_min}min, {now.tm_sec}sec\n")
-            calc_thread[0] = threading.Thread(target=process, name="process_rebuild")
+            calc_thread[0] = threading.Thread(target=crawl_data, name="process_rebuild")
             calc_thread[0].start()
             # raise RuntimeError('Not running with the Werkzeug Server')
         time.sleep(1*60)
 
+
+def pushWarning():
+    # time.sleep(5*60)
+    river_name = {
+        "0": "大豹溪", "1": "泰岡野溪溫泉", "2": "秀巒野溪溫泉", "3": "琉璃灣露營區", "4": "邦腹溪營地",
+        "5": "武界露營", "6": "二山子野溪溫泉", "7": "桶後溪營地", "8": "八煙野溪溫泉", "9": "天狗溪溫泉",
+        "10": "馬陵溫泉", "11": "精英野溪溫泉", "12": "栗松溫泉", "13": "流霞谷親水烤肉園區", "14": "八度野溪溫泉區",
+        "15": "梅淮露營區", "16": "五六露營農場", "17": "祕密基地露營區", "18": "瑞岩溫泉野溪邊露營", "19": "金崙溫泉野溪露營區",
+        "20": "嘎拉賀溫泉", "21": "四稜溫泉", "22": "神駒谷溫泉", "23": "太魯灣溪溫泉", "24": "瑞岩溫泉",
+        "25": "紅香溫泉", "26": "萬大南溪溫泉", "27": "樂樂谷溫泉", "28": "玉穗溫泉", "29": "荖荖溫泉",
+        "30": "五區_拉卡_溫泉", "31": "文山溫泉",
+    }
+    while True:
+        cache = {}
+        with open('alert', 'r') as f:
+            for line in f.readlines():
+                sp = line.split()
+                cache[sp[0]] = int(sp[1]) - 1
+
+        with open('alert', 'w') as f:
+            for k, v in cache.items():
+                if v < -60:
+                    continue
+                f.write(f"{k} {v}\n")
+
+        result = ""
+        with open('alert', 'r') as f:
+            for line in f.readlines():
+                splits = line.replace('\n', '').split(' ')
+                result += river_name[splits[0]] + "警戒囉！\n"
+                if splits[0] in cache.keys():
+                    if cache[splits[0]] < 0:
+                        result += f"山洪已經到了！"
+                    else:
+                        result += f"最多還有{cache[splits[0]]}分鐘洪水會到，盡速撤離喔\n"
+                else:
+                    result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
+
+        for uid in UIDS:
+            line_bot_api.push_message(uid, TextSendMessage(text=result))
+        print(f"push\n{result}")
+        print("====== DONE PUSHING MESSAGE ======")
+        time.sleep(1*60)
 
 # import os
 if __name__ == "__main__":
     # print(os.path.isfile(os.path.join(os.getcwd(), 'testfile')))
     # print(os.path.isdir(os.path.join(os.getcwd(), '60min_data')))
     port = int(os.environ.get('PORT', 5000))
-    thread = threading.Thread(target=process, name="process")
+    thread = threading.Thread(target=crawl_data, name="process")
     calc_thread.append(thread)
     thread.start()
     thread2 = threading.Thread(target=wake, name="wake")
     thread2.start()
 
-    maintainThread = threading.Thread(target=maintain, name="maintain")
+    maintainThread = threading.Thread(target=maintain, name="maintain process")
     maintainThread.start()
+
+    pushWarningThread = threading.Thread(target=pushWarning, name='pushWarningThread')
+    pushWarningThread.start()
 
     app.run(host='0.0.0.0', port=port)

@@ -1,4 +1,5 @@
-﻿import os
+﻿import math
+import os
 import numpy
 import json
 
@@ -72,6 +73,13 @@ class RainCalculator:
             for filename in filenames:
                 with open(os.path.join(dirname, filename)) as f:
                     self.radar_data = numpy.array(json.loads(f.readline()))
+                    # TODO add QPESUMS update rain code
+                    # position = 0
+                    # locationBorders = ((),)
+                    # for x1, y1, x2, y2 in locationBorders:
+                    #     self.updatePositionRain(position, x1, y1, x2, y2)
+                    #     position += 1
+
                     # all location code
                     # region
                     self.__update_rain_大豹溪()
@@ -120,20 +128,36 @@ class RainCalculator:
     def check(self, hour):
         # TODO : implement check and add into alert file
         # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
+        rivers = []
+        with open('alert', 'r') as f:
+            for line in f.readlines():
+                rivers.append(int(line.split()[0]))
+
         with open('alert', 'w') as f:
             for i in range(len(self.depth)):# TODO fix I's unit, it should be divided by hours
-                q = Q_CIA(self.location_rain[i]/hour, self.area_pixel[i]*100)*0.8  # 100 ha
+                q = Q_CIA(self.location_rain[i]/hour, self.area_pixel[i]*100)  # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
                 print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")  # not meters
-                if h >= 50 * 0.8:  # 50cm
-                    f.write(f"{i} {round(self.distance[i] * 1000 / v / 60, 2)}\n")
+                if h >= 50:  # 50cm
+                    if i not in rivers:
+                        f.write(f"{i} {math.floor(self.distance[i] * 1000 / v / 60)}\n")
         return
 
     def print_location_rain(self):
         for i in range(0, len(self.location_rain), 2):
             print(f"{i}: {self.location_rain[i]}", f"{i + 1}: {self.location_rain[i + 1]}")
         pass
+
+    def updatePositionRain(self, position, x1, y1, x2, y2):
+        dbz = 0
+        area = (x2-x1+1)*(y2-y1+1)
+        for x in range(x1, x2 + 1):
+            for y in range(y1, y2 + 1):
+                dbz += max(0, self.radar_data[y, x])
+
+        average_dbz = dbz / area / 1.25 / 1.25
+        self.location_rain[position] += self.__dBZ_to_R(average_dbz)
 
     # region
     # 15*1.25*1.25 km*km
