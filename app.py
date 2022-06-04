@@ -28,6 +28,7 @@ from 抓預報 import Forcaster
 # ======self written==========
 
 
+
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
 # Channel Access Token
@@ -37,29 +38,18 @@ line_bot_api = LineBotApi(
 handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
 
-# @app.route("/push/<string:push_text_str>")
-# def push_message(push_text_str):
-#     print(push_text_str)
-#     for uid in UIDS:
-#         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
-#     return push_text_str
-
-
-
-
-
-locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
+# locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
 # # ! deposited
-@app.route("/web", methods=['GET'])
-def web():
-    location = int(request.args['place'])
-    print(location)
-    locationName = locationNames[location]
+# @app.route("/web", methods=['GET'])
+# def web():
+#     location = int(request.args['place'])
+#     print(location)
+#     locationName = locationNames[location]
 
-    # prepare data and send into the view
-    ss = requests.Session()
+#     # prepare data and send into the view
+#     ss = requests.Session()
 
-    return render_template('index.html',  locationName=locationName)#, id=userid)
+#     return render_template('index.html',  locationName=locationName)#, id=userid)
 
 
 
@@ -73,7 +63,7 @@ def callback():
     signature = request.headers['X-Line-Signature']
     # get request body as text
     body = request.get_data(as_text=True)
-    app.logger.info("Request body: " + body)
+    # app.logger.info("Request body: " + body)
     # handle webhook body
     try:
         handler.handle(body, signature)
@@ -87,6 +77,7 @@ fster = Forcaster()
 # 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
+    print(event.message.text)
     msg = event.message.text
     if msg == '接收':
         UIDS.add(event.source.sender_id)
@@ -136,9 +127,9 @@ def crawl_data():
         rcal.update(60)
         print("under is 60min check")
         rcal.check(1)
+
         rcal.update(180)
         print("under is 3hr check")
-        rcal.check(3)
         print("====== DONE CHECKING WATER LEVEL ======")
 
         time.sleep(8 * 60)
@@ -227,13 +218,11 @@ def pushWarning():
             for line in f.readlines():
                 splits = line.replace('\n', '').split(' ')
                 result += river_name[splits[0]] + "警戒囉！\n"
-                if splits[0] in cache.keys():
-                    if cache[splits[0]] < 0:
-                        result += f"山洪已經到了！"
-                    else:
-                        result += f"最多還有{cache[splits[0]]}分鐘洪水會到，盡速撤離喔\n"
+                if cache[splits[0]] <= 0:
+                    result += f"山洪已經到了！\n"
                 else:
-                    result += f"最多還有{splits[1]}分鐘洪水會到，盡速撤離喔\n"
+                    base_num = cache[splits[0]]
+                    result += f"最多還有{base_num//5*5}~{(base_num//5+1)*5}分鐘洪水會到，盡速撤離喔\n"
 
         for uid in UIDS:
             line_bot_api.push_message(uid, TextSendMessage(text=result))
