@@ -399,15 +399,21 @@ def get_what_do_you_want_msg():
     )
 
 
-@handler.add(MemberJoinedEvent)
+@handler.add(FollowEvent)
 def welcome(event):
-    uid = event.joined.members[0].user_id
-    # UIDS.add(uid)
-    gid = event.source.group_id
-    profile = line_bot_api.get_group_member_profile(gid, uid)
+    print("TEST")# TODO
+    uid = event.source.sender_id
+    profile = line_bot_api.get_profile(uid)
     name = profile.display_name
-    message = TextSendMessage(text=get_welcome_msg())
-    line_bot_api.reply_message(event.reply_token, message)
+    message = TextSendMessage(text=get_welcome_msg(name))
+    line_bot_api.reply_message(event.reply_token, [message, get_what_do_you_want_msg()])
+
+
+@handler.add(LeaveEvent)
+def leave(event):
+    uid = event.source.sender_id
+    UIDS.remove(uid)
+    return "OK"
 
 
 UIDS = set()
@@ -443,13 +449,14 @@ def wake():
         time.sleep(20 * 60)
 
 
-def get_welcome_msg():
-    return '''嗨~ 這裡是「水來了，快逃！」
+def get_welcome_msg(name):
+    return f'''歡迎！{name}！
+這裡是「水來了，快逃！」
 您可以藉由傳送指令來獲取對應的資訊。
 目前支援的地點如下：
-大豹溪蟾蜍山谷 泰岡野溪溫泉 秀巒野溪溫泉
-琉璃灣露營區 邦腹溪營地 武界露營
-二山子野溪溫泉 桶後溪營地
+大豹溪蟾蜍山谷 泰岡野溪溫泉
+秀巒野溪溫泉 琉璃灣露營區 邦腹溪營地
+武界露營 二山子野溪溫泉 桶後溪營地
 八煙野溪溫泉 天狗溪溫泉 馬陵溫泉
 精英野溪溫泉 栗松溫泉 梅淮露營區
 流霞谷親水烤肉園區 五六露營農場
@@ -537,7 +544,7 @@ def pushWarning():
 
         # deal with spetial report
         special_massage = special_crawler.get_spetial_warning_msg()
-        print(special_massage)
+        # print(special_massage)
 
         for uid in UIDS:
             push_arr = []

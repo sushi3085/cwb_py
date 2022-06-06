@@ -221,7 +221,7 @@ class RainCalculator:
                 q = Q_CIA(self.location_rain[i] / hour, self.area_pixel[i] * 100)  # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
-                print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")  # not meters
+                # print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")  # not meters
                 if h >= 50:  # 50cm
                     if i not in rivers:
                         f.write(f"{i} {math.floor(self.distance[i] * 1000 / v / 60)}\n")
