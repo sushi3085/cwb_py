@@ -25,8 +25,10 @@ from typing import List
 from 最近60分雷達回波抓XML import CrawlSixty
 from 算各地60分鐘換算雨量 import RainCalculator
 from 抓預報 import Forcaster
-# ======self written==========
+from crawl_qpesums import QPECrawler
+from special_crawler import SpecialCrawler
 
+# ======self written==========
 
 
 app = Flask(__name__)
@@ -37,23 +39,28 @@ line_bot_api = LineBotApi(
 # Channel Secret
 handler = WebhookHandler('bf5dd4e6a1bfe57aa6a8973ec0c72a56')
 
+# @app.route("/push/<string:push_text_str>")
+# def push_message(push_text_str):
+#     print(push_text_str)
+#     for uid in UIDS:
+#         line_bot_api.push_message(uid, TextSendMessage(text=push_text_str))
+#     return push_text_str
 
-# locationNames = ['大豹溪','asd','aaaaaaaaaaaa']
+
+# locationNames = ['大豹溪', 'asd', 'aaaaaaaaaaaa']
+
+
 # # ! deposited
 # @app.route("/web", methods=['GET'])
 # def web():
 #     location = int(request.args['place'])
 #     print(location)
 #     locationName = locationNames[location]
-
+#
 #     # prepare data and send into the view
 #     ss = requests.Session()
-
-#     return render_template('index.html',  locationName=locationName)#, id=userid)
-
-
-
-
+#
+#     return render_template('index.html', locationName=locationName)  # , id=userid)
 
 
 # 監聽所有來自 /callback 的 Post Request
@@ -63,7 +70,7 @@ def callback():
     signature = request.headers['X-Line-Signature']
     # get request body as text
     body = request.get_data(as_text=True)
-    # app.logger.info("Request body: " + body)
+    app.logger.info("Request body: " + body)
     # handle webhook body
     try:
         handler.handle(body, signature)
@@ -72,34 +79,324 @@ def callback():
     return 'OK'
 
 
-
+# 6hr weather condition
 fster = Forcaster()
 # 處理訊息
+allInstruction = """所有指令：
+「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛以及警特報將會通知！
+「取消」-> 停止接收狀態，若有洪汛將 不會 通知
+「看預報」-> 可以查看QPESUMS(氣象局新一代劇烈天氣監測系統)未來1小時各地點降雨量
+以及各地點未來6小時以下氣象資訊：
+1. 天氣狀況文字描述( 晴時多雲 )
+2. 降雨機率
+3. 氣溫
+4. 對環境的感受
+「看回波」-> 看過去最近三小時，各地區的最大6筆雷達迴波值"""
+
+qpe_crawler = QPECrawler()
+
+
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    print(event.message.text)
     msg = event.message.text
     if msg == '接收':
         UIDS.add(event.source.sender_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="訂閱成功，若要取消請回覆「取消」"))
+        line_bot_api.reply_message(event.reply_token, [
+            TextSendMessage(text="訂閱成功！\n" + allInstruction),
+            get_what_do_you_want_msg(),
+        ])
         return 'OK'
     elif msg == '取消':
         UIDS.remove(event.source.sender_id)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text="取消成功，若要回復訂閱請回覆「訂閱」"))
+        line_bot_api.reply_message(event.reply_token, [
+            TextSendMessage(text="取消成功！"),
+            get_what_do_you_want_msg(),
+        ])
         return 'OK'
-    elif msg== '看預報':
-        for position in fster.table.keys():
-            fster.get(position)
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=fster.get_weather_msg()))
+    elif msg == '看預報':
+        reply_see_report_msg(event)
+        # for position in fster.table.keys():
+        #     fster.get(position)
+        # line_bot_api.reply_message(event.reply_token, TextSendMessage(text=fster.get_weather_msg()))
+    elif msg.split()[0] == "我想查看":
+        weather_msg = fster.get_one_location_weather_report(msg.split()[1])
+        qpe_msg = qpe_crawler.get_location_rain_msg_text(msg.split()[1])
+        emoji = []
+        indexes = []
+        for i, char in enumerate(qpe_msg):
+            if char == "$":
+                indexes.append(i)
+        for i in indexes:
+            emoji.append({
+                "index": i,
+                "productId": "5ac21a18040ab15980c9b43e",
+                "emojiId": "025"
+            })
+
+        line_bot_api.reply_message(event.reply_token, [
+            TextSendMessage(text=weather_msg),
+            TextSendMessage(text=qpe_msg, emojis=emoji if emoji else None),
+            get_what_do_you_want_msg()
+        ])
+    elif msg == "看回波":# TODO: six highest records
+        reply_see_radar_msg(event)
+    elif msg.split()[0] == "查看回波":
+        radar_message = rcal.get_max_six_signle_msg(msg.split()[1])
+        line_bot_api.reply_message(event.reply_token, TextSendMessage(text=radar_message))
     else:
-        line_bot_api.reply_message(event.reply_token, TextSendMessage(text='''所有指令：
-「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛將會通知
+        line_bot_api.reply_message(event.reply_token, [
+            TextSendMessage(text='''所有指令：
+「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛以及警特報將會通知
 「取消」-> 取消接收狀態，若有洪汛將 不會 通知
-「看預報」-> 可以查看各地點未來6小時以下氣象資訊：
+「看預報」-> 可以查看QPESUMS(氣象局新一代劇烈天氣監測系統)未來1小時各地點降雨量
+以及各地點未來6小時以下氣象資訊：
         1. 天氣狀況文字描述( 晴時多雲 )
         2. 降雨機率
         3. 氣溫
-        4. 對環境的感受'''))
+        4. 對環境的感受
+「看回波」-> 看過去最近三小時，各地區的最大6筆雷達迴波值'''),
+            get_what_do_you_want_msg(),
+        ])
+
+
+def reply_see_report_msg(event):
+    camp_msg = ""
+    camps = fster.get_location_camps_dict()
+    for k in camps:
+        camp_msg += k + "的露營溫泉區有:\n"
+        for camp in camps[k]:
+            camp_msg += camp + "\n"
+        camp_msg += "\n"
+    camp_msg += "請問您想查看哪地區的\n1.未來六小時降雨機率、氣溫等資訊\n2.未來一小時降雨預測值"
+    line_bot_api.reply_message(
+        event.reply_token,
+        [
+            TextSendMessage(text=camp_msg),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='北部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='復興區',
+                            text='我想查看 復興區'
+                        ),
+                        MessageTemplateAction(
+                            label='尖石鄉',
+                            text='我想查看 尖石鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='大同鄉',
+                            text='我想查看 大同鄉'
+                        ),
+                    ]
+                )
+            ),
+
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='北部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='金山區',
+                            text='我想查看 金山區'
+                        ),
+                        MessageTemplateAction(
+                            label='三峽區',
+                            text='我想查看 三峽區'
+                        ),
+                        MessageTemplateAction(
+                            label='烏來區',
+                            text='我想查看 烏來區'
+                        ),
+                    ]
+                )
+            ),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='中部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='信義鄉',
+                            text='我想查看 信義鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='仁愛鄉',
+                            text='我想查看 仁愛鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='桃源區',
+                            text='我想查看 桃源區'
+                        ),
+                        MessageTemplateAction(
+                            label='和平區',
+                            text='我想查看 和平區'
+                        ),
+                    ]
+                )
+            ),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='南部、東部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='六龜區',
+                            text='我想查看 六龜區'
+                        ),
+                        MessageTemplateAction(
+                            label='茂林區',
+                            text='我想查看 茂林區'
+                        ),
+                        MessageTemplateAction(
+                            label='海端鄉',
+                            text='我想查看 海端鄉'
+                        ),
+                    ]
+                )
+            ),
+        ]
+    )
+
+
+def reply_see_radar_msg(event):
+    camp_msg = ""
+    camps = fster.get_location_camps_dict()
+    for k in camps:
+        camp_msg += k + "的露營溫泉區有:\n"
+        for camp in camps[k]:
+            camp_msg += camp + "\n"
+        camp_msg += "\n"
+    camp_msg += "請問您想查看哪地區的\n>> 過去最近3小時的降雨雷達回波\n前6名最大值\n"
+    line_bot_api.reply_message(
+        event.reply_token,
+        [
+            TextSendMessage(text=camp_msg),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='北部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='復興區',
+                            text='查看回波 復興區'
+                        ),
+                        MessageTemplateAction(
+                            label='尖石鄉',
+                            text='查看回波 尖石鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='大同鄉',
+                            text='查看回波 大同鄉'
+                        ),
+                    ]
+                )
+            ),
+
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='北部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='金山區',
+                            text='查看回波 金山區'
+                        ),
+                        MessageTemplateAction(
+                            label='三峽區',
+                            text='查看回波 三峽區'
+                        ),
+                        MessageTemplateAction(
+                            label='烏來區',
+                            text='查看回波 烏來區'
+                        ),
+                    ]
+                )
+            ),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='中部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='信義鄉',
+                            text='查看回波 信義鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='仁愛鄉',
+                            text='查看回波 仁愛鄉'
+                        ),
+                        MessageTemplateAction(
+                            label='桃源區',
+                            text='查看回波 桃源區'
+                        ),
+                        MessageTemplateAction(
+                            label='和平區',
+                            text='查看回波 和平區'
+                        ),
+                    ]
+                )
+            ),
+            TemplateSendMessage(
+                alt_text='請選擇鄉鎮市區',
+                template=ButtonsTemplate(
+                    title='南部、東部',
+                    text='請選擇鄉鎮市區',
+                    actions=[
+                        MessageTemplateAction(
+                            label='六龜區',
+                            text='查看回波 六龜區'
+                        ),
+                        MessageTemplateAction(
+                            label='茂林區',
+                            text='查看回波 茂林區'
+                        ),
+                        MessageTemplateAction(
+                            label='海端鄉',
+                            text='查看回波 海端鄉'
+                        ),
+                    ]
+                )
+            ),
+        ]
+    )
+
+
+def get_what_do_you_want_msg():
+    return TemplateSendMessage(
+        alt_text='請問您想做什麼？',
+        template=ButtonsTemplate(
+            title='請問您想做什麼？',
+            text='請選擇指令',
+            actions=[
+                MessageTemplateAction(
+                    label='開始接收警戒資訊',
+                    text='接收'
+                ),
+                MessageTemplateAction(
+                    label='停止接收警戒資訊',
+                    text='取消'
+                ),
+                MessageTemplateAction(
+                    label='我想看氣象雨量預報',
+                    text='看預報'
+                ),
+                MessageTemplateAction(
+                    label='看近3小時雷達迴波極值',
+                    text='看回波'
+                ),
+            ]
+        )
+    )
 
 
 @handler.add(MemberJoinedEvent)
@@ -115,21 +412,24 @@ def welcome(event):
 
 UIDS = set()
 
+rcal = RainCalculator()
+
 
 def crawl_data():
+    #! if there is bug while running, consider add this:
+    # rcal = RainCalculator()
     while True:
         crl60 = CrawlSixty()
         crl60.main()
         crl60.crawl_3hr()
         print("================ DONE crawling file====================")
 
-        rcal = RainCalculator()
+        rcal.initialize()
         rcal.update(60)
         print("under is 60min check")
         rcal.check(1)
 
         rcal.update(180)
-        print("under is 3hr check")
         print("====== DONE CHECKING WATER LEVEL ======")
 
         time.sleep(8 * 60)
@@ -140,11 +440,11 @@ def wake():
         s = requests.Session()
         s.get('https://avoid-coming-water.herokuapp.com/')
         print('== == WAKING UP == ==')
-        time.sleep(20*60)
+        time.sleep(20 * 60)
 
 
 def get_welcome_msg():
-    return'''嗨~ 這裡是「水來了，快逃！」
+    return '''嗨~ 這裡是「水來了，快逃！」
 您可以藉由傳送指令來獲取對應的資訊。
 目前支援的地點如下：
 大豹溪蟾蜍山谷 泰岡野溪溫泉 秀巒野溪溫泉
@@ -162,19 +462,28 @@ def get_welcome_msg():
 文山溫泉
 ===== ===== =====
 所有指令：
-「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛將會通知
+「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛以及警特報將會通知
 「取消」-> 取消接收狀態，若有洪汛將 不會 通知
-「看預報」-> 可以查看各地點未來6小時以下氣象資訊：
+「看預報」-> 可以查看QPESUMS(氣象局新一代劇烈天氣監測系統)未來1小時各地點降雨量
+以及各地點未來6小時以下氣象資訊：
         1. 天氣狀況文字描述( 晴時多雲 )
         2. 降雨機率
         3. 氣溫
         4. 對環境的感受
+「看回波」-> 看過去最近三小時，各地區的最大6筆雷達迴波值
 
 現在就試試下指令吧！
 '''
 
 
 calc_thread: List[threading.Thread] = []
+
+
+def qpe_crawl_thread():
+    while True:
+        qpe_crawler.get_image()
+        print("-- -- DONE QPE CRAWL-- --")
+        time.sleep(8 * 60)
 
 
 def maintain():
@@ -186,11 +495,13 @@ def maintain():
             calc_thread[0] = threading.Thread(target=crawl_data, name="process_rebuild")
             calc_thread[0].start()
             # raise RuntimeError('Not running with the Werkzeug Server')
-        time.sleep(1*60)
+        time.sleep(1 * 60)
 
+
+special_crawler = SpecialCrawler()
 
 def pushWarning():
-    # time.sleep(5*60)
+    time.sleep(1 * 60)
     river_name = {
         "0": "大豹溪", "1": "泰岡野溪溫泉", "2": "秀巒野溪溫泉", "3": "琉璃灣露營區", "4": "邦腹溪營地",
         "5": "武界露營", "6": "二山子野溪溫泉", "7": "桶後溪營地", "8": "八煙野溪溫泉", "9": "天狗溪溫泉",
@@ -222,13 +533,24 @@ def pushWarning():
                     result += f"山洪已經到了！\n"
                 else:
                     base_num = cache[splits[0]]
-                    result += f"最多還有{base_num//5*5}~{(base_num//5+1)*5}分鐘洪水會到，盡速撤離喔\n"
+                    result += f"最多還有{base_num // 5 * 5}~{(base_num // 5 + 1) * 5}分鐘洪水會到，盡速撤離喔\n"
+
+        # deal with spetial report
+        special_massage = special_crawler.get_spetial_warning_msg()
+        print(special_massage)
 
         for uid in UIDS:
-            line_bot_api.push_message(uid, TextSendMessage(text=result))
+            push_arr = []
+            if special_massage:
+                push_arr.append(TextSendMessage(text="以下為警特報資訊：\n"+special_massage))
+            if result:
+                push_arr.append(TextSendMessage(text="以下為警戒資訊：\n"+result))
+            if len(push_arr):
+                line_bot_api.push_message(uid, push_arr)
         print(f"push\n{result}")
         print("====== DONE PUSHING MESSAGE ======")
-        time.sleep(1*60)
+        time.sleep(1 * 60)
+
 
 # import os
 if __name__ == "__main__":
@@ -246,5 +568,8 @@ if __name__ == "__main__":
 
     pushWarningThread = threading.Thread(target=pushWarning, name='pushWarningThread')
     pushWarningThread.start()
+
+    qpeThread = threading.Thread(target=qpe_crawl_thread, name='qpe_crawl_thread')
+    qpeThread.start()
 
     app.run(host='0.0.0.0', port=port)

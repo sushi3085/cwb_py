@@ -4,10 +4,37 @@ import numpy
 import json
 
 from 曼寧等公式 import *
+from 抓預報 import Forcaster
 
 
 class RainCalculator:
     def __init__(self):
+        self.fster = Forcaster()
+
+        # xtox ytoy
+        self.location_coords = (((516, 518), (544, 548)), ((506, 509), (521, 525)), ((506, 509), (521, 525)), ((458, 463), (394, 397)),
+                                ((456, 458), (401, 404)), ((488, 493), (476, 478)), ((502, 506), (473, 475)), ((525, 533), (545, 548)),
+                                ((533, 536), (574, 576)), ((522, 525), (520, 524)), ((485, 486), (497, 498)), ((500, 502), (481, 484)),
+                                ((481, 485), (415, 416)), ((511, 513), (544, 546)), ((505, 506), (541, 542)), ((495, 499), (530, 533)),
+                                ((490, 492), (482, 485)), ((522, 524), (533, 535)), ((495, 498), (594, 598)), ((560, 568), (361, 364)),
+                                ((508, 513), (528, 530)), ((512, 517), (527, 533)), ((479, 488), (492, 503)), ((494, 503), (483, 484)),
+                                ((492, 493), (489, 490)), ((491, 497), (492, 498)), ((490, 501), (475, 478)), ((475, 480), (439, 443)),
+                                ((464, 468), (413, 415)), ((454, 457), (410, 413)), ((535, 539), (518, 523)), ((519, 520), (493, 494)),
+                                ((485, 486), (411, 412)), ((473, 477), (415, 417)), ((471, 476), (403, 411)), ((471, 476), (403, 411)),
+                                ((460, 468), (361, 364)), ((466, 468), (368, 371)), ((461, 463), (348, 349)), ((462, 463), (407, 408)),
+                                ((460, 461), (408, 409)),
+                                )
+        self.maps = {
+            "大豹溪蟾蜍山谷": 0, "泰崗野溪溫泉": 1, "秀巒溫泉": 2, "琉璃灣露營區": 3,
+            "邦腹溪營地": 4, "武界露營": 5, "二山子野溪溫泉": 6, "桶後溪營地": 7, "八煙野溪溫泉": 8,
+            "天狗溪溫泉": 9, "馬稜溫泉": 10, "精英野溪溫泉": 11, "栗松溫泉": 12, "流霞谷親水烤肉園區": 13,
+            "八度野溪溫泉區": 14, "梅淮露營區": 15, "五六露營農場": 16, "祕密基地露營區": 17, "瑞岩溫泉野溪邊露營": 18,
+            "金崙溫泉野溪露營區": 19, "嘎拉賀溫泉": 20, "四稜溫泉": 21, "神駒谷溫泉": 22, "太魯灣溪溫泉": 23,
+            "瑞岩溫泉": 24, "紅香溫泉": 25, "萬大南溪溫泉": 26, "樂樂谷溫泉": 27, "玉穗溫泉": 28,
+            "荖荖溫泉": 29, "五區_拉卡_溫泉": 30, "文山溫泉_有測站": 31, "彩霞溫泉": 32, "碧山溫泉": 33,
+            "轆轆溫泉": 34, "暇末溫泉": 35, "都飛魯溫泉": 36, "比魯溫泉": 37, "普沙羽揚溫泉": 38, "十坑溫泉": 39, "七坑溫泉": 40
+        }
+
         self.radar_data = None
         self.location_rain = [0] * 40
         self.location_rain_3hr = [0] * 40
@@ -47,6 +74,11 @@ class RainCalculator:
 
         self.area_pixel = [15, 20, 20, 24, 12, 18, 15, 36, 12, 20, 4, 12, 10, 9, 4, 20, 12, 9, 20, 36, 18, 28, 20, 20, 14, 49, 48, 30, 15, 16, 30, 4,
                            4, 15, 54, 54, 36, 12, 6]
+
+    def initialize(self):
+        self.radar_data = None
+        self.location_rain = [0] * 40
+        self.location_rain_3hr = [0] * 40
 
     def __dBZ_to_R(self, dBZ):
         # // Z = 300(R) ^ 1.4
@@ -103,7 +135,8 @@ class RainCalculator:
                     self.__update_rain_瑞岩溫泉野溪邊露營()
                     self.__update_rain_金崙溫泉野溪露營區()  # 19
                     # endregion
-                    #
+
+                    # region
                     self.__update_rain_嘎拉賀溫泉()  # 20
                     self.__update_rain_四稜溫泉()
                     self.__update_rain_神駒谷溫泉()
@@ -123,10 +156,60 @@ class RainCalculator:
                     self.__update_rain_都飛魯溫泉()  # no WDD
                     self.__update_rain_比魯溫泉()  # no WDD
                     self.__update_rain_普沙羽揚溫泉()  # no WDD
-                    #
+                    # endregion
+
+    def get_max_six_signle_msg(self, msg_location_name):
+        result = ""
+
+        location_records = [[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [],
+                            [], [], [], [], [], [], [], [], [], [], [], [],[],[],[],[],[],[],[],[],[]]
+        for dirname, _, filenames in os.walk('3hr_data'):
+            for filename in filenames:
+                with open(os.path.join(dirname, filename), 'r') as f:
+                    image = numpy.array(json.loads(f.readline()))
+
+                    for ID in range(len(self.location_coords)):
+                        xrange = self.location_coords[ID][0]
+                        yrange = self.location_coords[ID][1]
+                        location_records[ID].append(max(0, image[yrange[0]:yrange[1] + 1, xrange[0]:xrange[1] + 1].max()))
+
+        for i in range(len(location_records)):
+            location_records[i].sort()
+
+        for location in self.fster.get_location_camps_dict()[msg_location_name]:
+            # TODO : if msg_location_name in county_maps[msg.split()[1]] tsai zuo shia chuu
+            ID = self.maps[location]
+            result += location + "的前6筆資料：\n"
+            for i in range(6):
+                rain = math.ceil(location_records[ID][-i - 1])
+                if rain == 0:
+                    word = "(無雨)"
+                elif rain < 15:
+                    word = "(小雨)"
+                elif rain <= 30:
+                    word = "(中雨)"
+                elif rain <= 50:
+                    word = "(大雨)"
+                else:
+                    word = "(特大雨)"
+                result += f"{i + 1}. {rain} dBZ {word}\n"
+            result += "\n"
+
+        return result
+
+    def check_rain_for_QPE(self, location_name, Rain_Intensity):
+
+        if location_name not in self.maps:
+            return False
+        locationID = self.maps[location_name]
+        AREA = 100 * self.area_pixel[locationID]  # in ha
+        velocity = manning_velocity(self.width[locationID], self.depth[locationID], self.slope[locationID])
+        # print(Q_CIA(Rain_Intensity, AREA), velocity, self.width[locationID], sep='\n')
+        if Q_CIA(Rain_Intensity, AREA) / velocity / self.width[locationID] >= 50:
+            return True
+        return False
 
     def check(self, hour):
-        # TODO : implement check and add into alert file
         # print(len(self.area_ha),len(self.width),len(self.depth), len(self.slope))
         rivers = []
         with open('alert', 'r') as f:
@@ -134,8 +217,8 @@ class RainCalculator:
                 rivers.append(int(line.split()[0]))
 
         with open('alert', 'w') as f:
-            for i in range(len(self.depth)):# TODO fix I's unit, it should be divided by hours
-                q = Q_CIA(self.location_rain[i]/hour, self.area_pixel[i]*100)  # 100 ha
+            for i in range(len(self.depth)):  # TODO fix I's unit, it should be divided by hours
+                q = Q_CIA(self.location_rain[i] / hour, self.area_pixel[i] * 100)  # 100 ha
                 v = manning_velocity(self.width[i], self.depth[i], self.slope[i])
                 h = H(q, v, self.width[i])
                 print(f"station {i}, rainfall {self.location_rain[i]}mm -> river level rise ", h, "cms")  # not meters
@@ -149,9 +232,10 @@ class RainCalculator:
             print(f"{i}: {self.location_rain[i]}", f"{i + 1}: {self.location_rain[i + 1]}")
         pass
 
+    # TODO
     def updatePositionRain(self, position, x1, y1, x2, y2):
         dbz = 0
-        area = (x2-x1+1)*(y2-y1+1)
+        area = (x2 - x1 + 1) * (y2 - y1 + 1)
         for x in range(x1, x2 + 1):
             for y in range(y1, y2 + 1):
                 dbz += max(0, self.radar_data[y, x])
@@ -466,6 +550,9 @@ class RainCalculator:
         self.location_rain[19] += self.__dBZ_to_R(average_dbz)
         return
 
+    # endregion
+
+    # region
     # TL
     # BL
     # TR

@@ -59,7 +59,7 @@ class Forcaster:
         }
         self.results = []
         self.location_to_camps = {
-            '復興區': ['流霞谷親水烤肉園區', '八度野溪露營區', '嘎拉賀溫泉', '四稜溫泉'],
+            '復興區': ['流霞谷親水烤肉園區', '八度野溪溫泉區', '嘎拉賀溫泉', '四稜溫泉'],
             '尖石鄉': ['泰崗野溪溫泉', '梅淮露營區', '秀巒溫泉'],
             '大同鄉': ['祕密基地露營區'],
             '和平區': ['神駒谷溫泉', '馬稜溫泉'],
@@ -112,9 +112,29 @@ class Forcaster:
                     break
         return result
 
+    def get_one_location_weather_report(self, location):
+        result = ""
+        result += location + ":\n未來6小時環境、氣象資訊\n"
+        camps = self.location_to_camps[location]
+        for i, camp in enumerate(camps):
+            result += f"{i + 1}. {camp}\n"
+
+        for county in self.table:
+            self.get(county)
+
+        for it in self.results:
+            if it.get(location) != None:
+                string = it[location].split("。")
+                result += f"  {string[0]}\n  {string[1]}\n  {string[2]}\n  {string[3]}"
+                break
+        return result
+
+    def get_location_camps_dict(self):
+        return self.location_to_camps
+
 
 if __name__ == "__main__":
     forcaster = Forcaster()
     for position in forcaster.table.keys():
         forcaster.get(position)
-    print(forcaster.get_weather_msg())
+    print(forcaster.get_one_location_weather_report('復興區'))
