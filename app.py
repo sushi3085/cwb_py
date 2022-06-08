@@ -1,4 +1,5 @@
 # from crypt import methods
+import linebot.models
 from flask import Flask, request, abort, jsonify, render_template
 
 # ======這裡是呼叫的檔案內容=====
@@ -98,7 +99,11 @@ qpe_crawler = QPECrawler()
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    msg = event.message.text
+    msg = ""
+    try:
+        msg = event.message.text
+    except():
+        pass
     if msg == '接收':
         UIDS.add(event.source.sender_id)
         line_bot_api.reply_message(event.reply_token, [
@@ -107,9 +112,13 @@ def handle_message(event):
         ])
         return 'OK'
     elif msg == '取消':
-        UIDS.remove(event.source.sender_id)
+        try:
+            UIDS.remove(event.source.sender_id)
+        except KeyError:
+            line_bot_api.reply_message(event.reply_token, [TextSendMessage(text="您還沒有開始接收警特報與警戒資訊喔！"), get_what_do_you_want_msg()])
+            return 'OK'
         line_bot_api.reply_message(event.reply_token, [
-            TextSendMessage(text="取消成功！"),
+            TextSendMessage(text="取消成功！\n"+allInstruction),
             get_what_do_you_want_msg(),
         ])
         return 'OK'
@@ -143,12 +152,15 @@ def handle_message(event):
     elif msg.split()[0] == "查看回波":
         radar_message = rcal.get_max_six_signle_msg(msg.split()[1])
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=radar_message))
+    elif event.message.type == 'location':
+        longitude = event.message.longitude
+        latitude = event.message.latitude
     else:
         line_bot_api.reply_message(event.reply_token, [
             TextSendMessage(text='''所有指令：
 「接收」-> 進到隨時處於接收警戒訊息的狀態，若有洪汛以及警特報將會通知
 「取消」-> 取消接收狀態，若有洪汛將 不會 通知
-「看預報」-> 可以查看QPESUMS(氣象局新一代劇烈天氣監測系統)未來1小時各地點降雨量
+「看預報」-> 可以查看未來1小時各地點降雨量
 以及各地點未來6小時以下氣象資訊：
         1. 天氣狀況文字描述( 晴時多雲 )
         2. 降雨機率
@@ -230,10 +242,6 @@ def reply_see_report_msg(event):
                             text='我想查看 仁愛鄉'
                         ),
                         MessageTemplateAction(
-                            label='桃源區',
-                            text='我想查看 桃源區'
-                        ),
-                        MessageTemplateAction(
                             label='和平區',
                             text='我想查看 和平區'
                         ),
@@ -246,6 +254,10 @@ def reply_see_report_msg(event):
                     title='南部、東部',
                     text='請選擇鄉鎮市區',
                     actions=[
+                        MessageTemplateAction(
+                            label='桃源區',
+                            text='我想查看 桃源區'
+                        ),
                         MessageTemplateAction(
                             label='六龜區',
                             text='我想查看 六龜區'
@@ -336,10 +348,6 @@ def reply_see_radar_msg(event):
                             text='查看回波 仁愛鄉'
                         ),
                         MessageTemplateAction(
-                            label='桃源區',
-                            text='查看回波 桃源區'
-                        ),
-                        MessageTemplateAction(
                             label='和平區',
                             text='查看回波 和平區'
                         ),
@@ -352,6 +360,10 @@ def reply_see_radar_msg(event):
                     title='南部、東部',
                     text='請選擇鄉鎮市區',
                     actions=[
+                        MessageTemplateAction(
+                            label='桃源區',
+                            text='查看回波 桃源區'
+                        ),
                         MessageTemplateAction(
                             label='六龜區',
                             text='查看回波 六龜區'
@@ -417,6 +429,8 @@ def leave(event):
 
 
 UIDS = set()
+
+location_of_UID = {}
 
 rcal = RainCalculator()
 
@@ -549,7 +563,7 @@ def pushWarning():
         for uid in UIDS:
             push_arr = []
             if special_massage:
-                push_arr.append(TextSendMessage(text="以下為警特報資訊：\n"+special_massage))
+                push_arr.append(TextSendMessage(text="以下為警特報資訊：\n"+special_massage+"\n可以直接傳送位置資訊來篩選警特報區域！"))# TODO
             if result:
                 push_arr.append(TextSendMessage(text="以下為警戒資訊：\n"+result))
             if len(push_arr):

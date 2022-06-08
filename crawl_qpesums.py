@@ -66,9 +66,9 @@ class QPECrawler:
                 print(location_name)
                 result += location_name + "：\n"
                 vals = maps[location_name]
-                I = self.__get_position_rain(vals[0], vals[1])
+                I = 99  # self.__get_position_rain(vals[0], vals[1])
 
-                result += "降雨量為" + str(int(round(self.__get_position_rain(vals[0], vals[1]), 0))) + " mm\n"
+                result += "降雨量為" + str(int(round(I, 0))) + " mm\n"
 
                 if self.rainCalculator.check_rain_for_QPE(location_name, I):
                     result += "$ " + location_name + " 未來1小時有可能爆發\n"
