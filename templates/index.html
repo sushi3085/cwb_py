@@ -40,7 +40,7 @@
 				[415,25],[],[],[],[],[],[],[],[],[],[],[],
 			]%}
 			{% for _ in range(5) %}
-			<img src="{{url_for('static', filename='icon.jpg')}}" id="spring{{_}}" onclick="window.location='https://avoid-coming-water.herokuapp.com/web?place={{_}}'" style="cursor:pointer;box-shadow: 0px 0px 5px red;position:relative;left:{{coor[_][0]}}px; top:{{coor[_][1]}}px;width:20px; border-radius:10px">
+			<img src="{{url_for('static', filename='icon.jpg')}}" id="spring{{_}}" onclick="window.location='http://localhost:5000/web?place={{_}}'" style="cursor:pointer;box-shadow: 0px 0px 5px red;position:relative;left:{{coor[_][0]}}px; top:{{coor[_][1]}}px;width:20px; border-radius:10px">
 			{% endfor %}
 		</div>
 	</div>
