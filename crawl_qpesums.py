@@ -66,7 +66,7 @@ class QPECrawler:
                 print(location_name)
                 result += location_name + "：\n"
                 vals = maps[location_name]
-                I = 99  # self.__get_position_rain(vals[0], vals[1])
+                I = self.__get_position_rain(vals[0], vals[1])
 
                 result += "降雨量為" + str(int(round(I, 0))) + " mm\n"
 
